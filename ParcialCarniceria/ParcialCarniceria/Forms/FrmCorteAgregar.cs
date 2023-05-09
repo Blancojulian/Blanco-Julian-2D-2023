@@ -30,5 +30,11 @@ namespace ParcialCarniceria.Forms
         {
             base.ConfigurarForm();
         }
+
+        protected override bool ControlarCampos()
+        {
+
+            return base.ControlarCampos();
+        }
     }
 }

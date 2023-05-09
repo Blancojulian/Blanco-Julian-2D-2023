@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,6 +18,8 @@ namespace ParcialCarniceria.Forms
         protected string? _titulo;
         protected string? _nombre;
         protected DetalleCorte? _detalleCorte;
+        protected SoundPlayer _playerError;
+        protected SoundPlayer _playerClick;
 
         public FrmBaseCorte(string nombre, DetalleCorte? detalle, string titulo) : this()
         {
@@ -24,10 +27,13 @@ namespace ParcialCarniceria.Forms
             this._detalleCorte = detalle;
             this._titulo = titulo;
             this._nombre = nombre;
+            
         }
         public FrmBaseCorte()
         {
             InitializeComponent();
+            this._playerClick = new SoundPlayer(Properties.Resources.click);
+            this._playerError = new SoundPlayer(Properties.Resources.error);
         }
         public DetalleCorte? DetalleCorte => this._detalleCorte;
         public string? NombreCorte => this._nombre;
@@ -40,7 +46,8 @@ namespace ParcialCarniceria.Forms
 
         protected virtual void ConfirmarCorte()
         {
-            if (ControlarCampos())//hacer metodo que controler que nada esta null
+            
+            if (ControlarCampos())
             {
                 string detalle = this.rtbxDetalle.Text ?? string.Empty;
                 this._nombre = this.tbxNombre.Text;
@@ -52,6 +59,12 @@ namespace ParcialCarniceria.Forms
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
+            else
+            {
+                this._playerError.Play();
+
+                MessageBox.Show("Debe completar los campos");
+            }
         }
 
         protected virtual void ConfigurarForm()
@@ -60,18 +73,26 @@ namespace ParcialCarniceria.Forms
             this.cbxCategoria.DataSource = Enum.GetValues(typeof(Categorias));
         }
 
-        protected bool ControlarCampos()
+        protected virtual bool ControlarCampos()
         {
-            return true;
+            return this.nudPrecio.Value > 0 && this.nudStock.Value >= 0 &&
+                Enum.IsDefined(typeof(Categorias), this.cbxCategoria.Text) &&
+                !string.IsNullOrEmpty(this.tbxNombre.Text) &&
+                !string.IsNullOrWhiteSpace(this.tbxNombre.Text) &&
+                this.rtbxDetalle.Text is not null;
         }
 
         private void btnConfirmar_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
+
             this.ConfirmarCorte();
         }
 
         private void btnCancelar_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
+
             this._nombre = string.Empty;
             this._detalleCorte = null;
             this.DialogResult = DialogResult.Cancel;

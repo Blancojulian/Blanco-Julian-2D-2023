@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,6 +17,8 @@ namespace ParcialCarniceria.Forms
         private Cliente _cliente;
         private Compra _compra;
         private Form _frmPadre;
+        private SoundPlayer _playerError;
+        private SoundPlayer _playerClick;
         public FrmVenta(Cliente cliente, Form frmPadre) : this(cliente, frmPadre, new Compra())
         {
             InitializeComponent();
@@ -26,6 +29,8 @@ namespace ParcialCarniceria.Forms
             this._cliente = cliente;
             this._frmPadre = frmPadre;
             this._compra = compra;
+            this._playerClick = new SoundPlayer(Properties.Resources.click);
+            this._playerError = new SoundPlayer(Properties.Resources.error);
         }
 
         private void FrmVenta_Load(object sender, EventArgs e)
@@ -115,6 +120,8 @@ namespace ParcialCarniceria.Forms
 
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
+
             this.tbxBuscar.Text = string.Empty;
             this.dtgvDatos.ClearSelection();
 
@@ -142,6 +149,7 @@ namespace ParcialCarniceria.Forms
 
         private void btnAgregar_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
             string producto;
             double cantidad = (double)this.nudCantidad.Value;
             bool boolProducto = GetNombreProducto(out producto);
@@ -151,44 +159,56 @@ namespace ParcialCarniceria.Forms
             }
             else if (!boolProducto)
             {
+                this._playerError.Play();
                 MessageBox.Show("Debe seleccionar un producto");
             }
             else if (cantidad <= 0)
             {
+                this._playerError.Play();
                 MessageBox.Show("Debe ingresar una cantidad mayor a cero");
             }
             else
             {
+                this._playerError.Play();
                 MessageBox.Show("El producto ya se esta en el carrito");
 
             }
+
         }
 
         private void btnModificar_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
+
             string producto;
             double cantidad = (double)this.nudCantidad.Value;
             bool boolProducto = GetNombreProducto(out producto);
             if (boolProducto && this._compra.ModificarProducto(producto, cantidad))
             {
                 this.CargarMontos();
+
             }
             else if (!boolProducto)
             {
+                this._playerError.Play();
                 MessageBox.Show("Debe seleccionar un producto");
             }
             else if (cantidad <= 0)
             {
+                this._playerError.Play();
                 MessageBox.Show("Debe ingresar una cantidad mayor a cero");
             }
             else
             {
+                this._playerError.Play();
                 MessageBox.Show("El producto no se encuentra en el carrito");
             }
+
         }
 
         private void btnEliminar_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
             string producto;
             bool boolProducto = GetNombreProducto(out producto);
             if (boolProducto && this._compra.EliminarProducto(producto))
@@ -197,16 +217,21 @@ namespace ParcialCarniceria.Forms
             }
             else if (!boolProducto)
             {
+                this._playerError.Play();
                 MessageBox.Show("Debe seleccionar un producto");
             }
             else
             {
+                this._playerError.Play();
                 MessageBox.Show("El producto no se encuentra en el carrito");
             }
+
+            
         }
 
         private void btnConfirmar_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
             double total = this._compra.Total;
             bool dineroSuficiente = this._cliente - total;
             if (this._compra.Productos.Count > 0 && this._compra.Total > 0 && dineroSuficiente)
@@ -219,29 +244,36 @@ namespace ParcialCarniceria.Forms
                     this._compra = new Compra();
                     this.CargarMontos();
                     MessageBox.Show("Se realizo la compra con exito");
-
                 }
+                
             }
             else if (!dineroSuficiente)
             {
+                this._playerError.Play();
                 MessageBox.Show("No tiene dinero suficiente para realizar la compra");
 
             }
             else
             {
+                this._playerError.Play();
                 MessageBox.Show("Debe tener productos en el carrito para realizar la compra");
 
             }
+            
         }
 
         private void btnLimpiarCarrito_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
+
             this._compra.EliminarProducto();
             this.CargarMontos();
         }
 
         private void btnActualizar_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
+
             FrmDinero frmDinero = new FrmDinero(this._cliente);
             frmDinero.ShowDialog();
             this.CargarMontos();

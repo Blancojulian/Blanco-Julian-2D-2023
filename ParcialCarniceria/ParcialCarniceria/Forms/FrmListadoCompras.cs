@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -15,12 +16,16 @@ namespace ParcialCarniceria.Forms
     {
         private Vendedor _vendedor;
         private Cliente _cliente;
+        private SoundPlayer _playerError;
+        private SoundPlayer _playerClick;
 
         public FrmListadoCompras(Vendedor vendedor, Cliente cliente)
         {
             InitializeComponent();
             this._vendedor = vendedor;
             this._cliente = cliente;
+            this._playerClick = new SoundPlayer(Properties.Resources.click);
+            this._playerError = new SoundPlayer(Properties.Resources.error);
         }
 
         private void FrmListadoCompras_Load(object sender, EventArgs e)
@@ -68,6 +73,8 @@ namespace ParcialCarniceria.Forms
 
         private void btnSalir_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
+
             this.DialogResult = DialogResult.None;
             this.Close();
         }
@@ -76,6 +83,8 @@ namespace ParcialCarniceria.Forms
         {
             try
             {
+                this._playerClick.Play();
+
                 if (this.dtgvDatos.SelectedRows.Count > 0)
                 {
                     string mensaje = string.Empty;
@@ -100,6 +109,8 @@ namespace ParcialCarniceria.Forms
                 }
                 else
                 {
+                    this._playerError.Play();
+
                     MessageBox.Show($"Debe seleccionar una compra");
 
                 }

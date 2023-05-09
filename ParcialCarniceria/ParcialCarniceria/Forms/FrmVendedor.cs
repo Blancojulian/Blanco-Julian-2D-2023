@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -15,11 +16,15 @@ namespace ParcialCarniceria.Forms
     {
         private Vendedor _vendedor;
         private Form _frmPadre;
+        private SoundPlayer _playerError;
+        private SoundPlayer _playerClick;
         public FrmVendedor(Vendedor vendedor, Form frmPadre)
         {
             InitializeComponent();
             this._vendedor = vendedor;
             this._frmPadre = frmPadre;
+            this._playerClick = new SoundPlayer(Properties.Resources.click);
+            this._playerError = new SoundPlayer(Properties.Resources.error);
         }
 
         private void FrmVendedor_Load(object sender, EventArgs e)
@@ -64,6 +69,8 @@ namespace ParcialCarniceria.Forms
             if (senderGrid.Columns[e.ColumnIndex] is DataGridViewButtonColumn &&
         e.RowIndex >= 0)
             {
+                this._playerClick.Play();
+
                 string mail = senderGrid.Rows[e.RowIndex].Cells["Mail"].Value.ToString() ?? "nulo";
                 Cliente? cliente = this._vendedor.GetUsuario(mail);
 

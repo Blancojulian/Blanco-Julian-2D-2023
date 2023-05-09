@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace ParcialCarniceria.Forms
 {
@@ -19,7 +20,7 @@ namespace ParcialCarniceria.Forms
         }
         protected override void ConfirmarCorte()
         {
-            if (this._detalleCorte is not null)
+            if (this.ControlarCampos() && this._detalleCorte is not null)
             {
                 this._detalleCorte.Categoria = (Categorias)this.cbxCategoria.SelectedItem;
                 this._detalleCorte.StockKilos = (double)this.nudStock.Value;
@@ -30,6 +31,8 @@ namespace ParcialCarniceria.Forms
             }
             else
             {
+                this._playerError.Play();
+
                 MessageBox.Show("Error, no se selecciono corte de carne");
             }
         }
@@ -43,7 +46,7 @@ namespace ParcialCarniceria.Forms
                 this.cbxCategoria.SelectedItem = (Categorias)this._detalleCorte.Categoria;
                 this.nudPrecio.Value = (decimal)this._detalleCorte.PrecioKilo;
                 this.nudStock.Value = (decimal)this._detalleCorte.StockKilos;
-                this.rtbxDetalle.Text = this._detalleCorte.Detalle;
+                this.rtbxDetalle.Text = this._detalleCorte.Detalle ?? string.Empty;
 
             }
             else
@@ -51,6 +54,14 @@ namespace ParcialCarniceria.Forms
                 MessageBox.Show("Error, no se selecciono corte de carne");
                 this.DialogResult = DialogResult.No;
             }
+        }
+
+        protected override bool ControlarCampos()
+        {
+            
+            return this.nudPrecio.Value > 0 && this.nudStock.Value >= 0 &&
+                Enum.IsDefined(typeof(Categorias), this.cbxCategoria.Text) &&
+                this.rtbxDetalle.Text is not null;
         }
     }
 }

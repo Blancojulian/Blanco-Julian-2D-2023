@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,9 +14,13 @@ namespace ParcialCarniceria.Forms
 {
     public partial class FrmLogin : Form
     {
+        private SoundPlayer _playerError;
+        private SoundPlayer _playerClick;
         public FrmLogin()
         {
             InitializeComponent();
+            this._playerClick = new SoundPlayer(Properties.Resources.click);
+            this._playerError = new SoundPlayer(Properties.Resources.error);
         }
 
         private void FrmLogin_Load(object sender, EventArgs e)
@@ -38,6 +43,7 @@ namespace ParcialCarniceria.Forms
             }
             else
             {
+                this._playerError.Play();
                 MessageBox.Show("Debe seleccionar una opcion");
             }
 
@@ -50,14 +56,13 @@ namespace ParcialCarniceria.Forms
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            
+            this._playerClick.Play();
             Usuario? usuario = Carniceria.GetUsuario(this.tbxMail.Text, this.tbxContrasenia.Text);
             FrmDinero frmDinero;
             
 
             if (usuario is Cliente)
             {
-                MessageBox.Show("el usuario es Cliente");
                 frmDinero = new FrmDinero((Cliente)usuario);
                 frmDinero.ShowDialog();
 
@@ -72,19 +77,20 @@ namespace ParcialCarniceria.Forms
             }
             else if (usuario is Vendedor)
             {
-                MessageBox.Show("el usuario es Vendedor");
                 FrmHeladera frmHeladera = new FrmHeladera((Vendedor)usuario, this);
                 this.Hide();
                 frmHeladera.Show();
             }
             else
             {
+                this._playerError.Play();
                 MessageBox.Show("El mail o contraseña es INCORECTO");
             }
         }
 
         private void btnCompletarDatos_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
             this.CompletarDatos();
         }
 

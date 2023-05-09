@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,12 +17,16 @@ namespace ParcialCarniceria.Forms
         private Vendedor _vendedor;
         private Form _frmPadre;
         private int _lastIndex;
+        private SoundPlayer _playerError;
+        private SoundPlayer _playerClick;
         public FrmHeladera(Vendedor vendedor, Form frmPadre)
         {
             InitializeComponent();
             this._vendedor = vendedor;
             this._frmPadre = frmPadre;
             this._lastIndex = 0;
+            this._playerClick = new SoundPlayer(Properties.Resources.click);
+            this._playerError = new SoundPlayer(Properties.Resources.error);
         }
 
         private void FrmHeladera_Load(object sender, EventArgs e)
@@ -140,6 +145,8 @@ namespace ParcialCarniceria.Forms
 
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
+
             this.tbxBuscar.Text = string.Empty;
             this.dtgvDatos.ClearSelection();
 
@@ -147,6 +154,8 @@ namespace ParcialCarniceria.Forms
 
         private void msiHistorial_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
+
             FrmHistorial frmHistorial = new FrmHistorial(this._vendedor, this);
             frmHistorial.Show();
             this.Hide();
@@ -160,6 +169,8 @@ namespace ParcialCarniceria.Forms
 
         private void btnReponer_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
+
             double stock = (double)this.nudCantidad.Value;
             string producto;
 
@@ -171,6 +182,7 @@ namespace ParcialCarniceria.Forms
             }
             else
             {
+                this._playerError.Play();
                 MessageBox.Show("Debe selecionar un producto");
             }
         }
@@ -182,7 +194,8 @@ namespace ParcialCarniceria.Forms
 
         private void btnAgregar_Click(object sender, EventArgs e)
         {
-            
+            this._playerClick.Play();
+
             FrmCorteAgregar frm = new FrmCorteAgregar();
             frm.ShowDialog();
 
@@ -199,6 +212,7 @@ namespace ParcialCarniceria.Forms
             }
             else
             {
+                this._playerError.Play();
                 MessageBox.Show("Fallo al agregar el producto");
             }
             
@@ -206,6 +220,8 @@ namespace ParcialCarniceria.Forms
 
         private void btnModificar_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
+
             string producto;
             bool boolProducto = GetNombreProducto(out producto);
             DetalleCorte? detalle = this._vendedor.GetDetalleCorte(producto);
@@ -226,11 +242,13 @@ namespace ParcialCarniceria.Forms
                 }
                 else
                 {
+                    this._playerError.Play();
                     MessageBox.Show("Fallo al agregar el producto");
                 }
             }
             else if (!boolProducto)
             {
+                this._playerError.Play();
                 MessageBox.Show("Debe seleccionar un producto");
             }
             else

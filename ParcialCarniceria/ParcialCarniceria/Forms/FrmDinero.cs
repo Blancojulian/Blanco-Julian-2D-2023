@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,10 +15,14 @@ namespace ParcialCarniceria.Forms
     public partial class FrmDinero : Form
     {
         private Cliente _cliente;
+        private SoundPlayer _playerError;
+        private SoundPlayer _playerClick;
         public FrmDinero(Cliente cliente)
         {
             InitializeComponent();
             this._cliente = cliente;
+            this._playerClick = new SoundPlayer(Properties.Resources.click);
+            this._playerError = new SoundPlayer(Properties.Resources.error);
         }  
 
         private void FrmDinero_Load(object sender, EventArgs e)
@@ -41,18 +46,23 @@ namespace ParcialCarniceria.Forms
             {
                 MessageBox.Show("Ingrese un monto mayor a cero");
                 //this.DialogResult = DialogResult.No;
+                this._playerError.Play();
 
             }
         }
 
         private void btnCancelar_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
+
             this.DialogResult = DialogResult.Cancel;
             this.Close();
         }
 
         private void btnConfirmar_Click(object sender, EventArgs e)
         {
+            this._playerClick.Play();
+
             this.ConfirmarDineroDisponible();
         }
 
