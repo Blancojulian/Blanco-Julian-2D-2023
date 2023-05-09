@@ -142,6 +142,18 @@ namespace BibliotecaEntidades.Entidades
             this._productos.Clear();
         }
 
+        public void ModificarNombreProducto(string nombre, string nuevoNombre)
+        {
+            bool retorno = this._productos.ContainsKey(nombre) && !this._productos.ContainsKey(nuevoNombre);
+            if (retorno)
+            {
+                double value = this._productos[nombre];
+                this._productos.Remove(nombre);
+                this._productos.Add(nuevoNombre, value);
+            }
+
+        }
+
         /*
         public DataRow Detalle => (DataRow)this;
 

@@ -70,6 +70,36 @@ namespace BibliotecaEntidades.Entidades
             return retorno;
         }
 
+        public bool EliminarCorte(string nombre)
+        {
+            bool retorno = !this._cortesCarne.ContainsKey(nombre);
+            if (retorno)
+            {
+                this._cortesCarne.Remove(nombre);
+            }
+
+            return retorno;
+        }
+        public bool ModificarNombreCorte(string nombre, string nuevoNombre)
+        {
+            bool retorno = this._cortesCarne.ContainsKey(nombre) && !this._cortesCarne.ContainsKey(nuevoNombre);
+            List<Compra> compras;
+            if (retorno)
+            {
+                DetalleCorte value = this._cortesCarne[nombre];
+                this._cortesCarne.Remove(nombre);
+                this._cortesCarne.Add(nuevoNombre, value);
+                compras = Carniceria.GetCompras();
+
+                foreach (Compra compra in compras)
+                {
+                    compra.ModificarNombreProducto(nombre, nuevoNombre);
+                }
+            }
+
+            return retorno;
+        }
+
         public void ReponerStock(string corte, double stock)
         {
             DetalleCorte? detalle = this.GetDetalleCorte(corte);

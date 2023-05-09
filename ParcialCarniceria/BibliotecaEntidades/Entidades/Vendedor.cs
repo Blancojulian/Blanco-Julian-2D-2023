@@ -54,6 +54,11 @@ namespace BibliotecaEntidades.Entidades
             return Carniceria.Heladera.AgregarCorte(nombre, detalleCorte);
         }
 
+        public bool EliminarCorte(string nombre)
+        {
+            return Carniceria.Heladera.EliminarCorte(nombre);
+        }
+
         public DetalleCorte? GetDetalleCorte(string corte)
         {
             return Carniceria.Heladera.GetDetalleCorte(corte);
