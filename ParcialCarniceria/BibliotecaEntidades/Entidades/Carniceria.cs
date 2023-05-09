@@ -19,6 +19,9 @@ namespace BibliotecaEntidades.Entidades
             CargarDatos();
             CargarCompras();
         }
+        /// <summary>
+        /// Retorna la lista de clientes de la clase Carniceria
+        /// </summary>
         public static List<Cliente> Clientes
         {
             get
@@ -36,9 +39,16 @@ namespace BibliotecaEntidades.Entidades
                 return clientes;
             }
         }
-
+        /// <summary>
+        /// Retorna la instacia de la clase Heladera
+        /// </summary>
         public static Heladera Heladera => _heladera;
-
+        /// <summary>
+        /// Comprueba que exista un usuario con el mail y contraseña ingresados y lo devuelve
+        /// </summary>
+        /// <param name="mail">mail del usuario buscado</param>
+        /// <param name="contrasenia">contraseña del usuario buscado</param>
+        /// <returns>Retorna un Usuario si hay una coincidencia o un nulo si no</returns>
         public static Usuario? GetUsuario(string mail, string contrasenia)
         {
             Usuario? usuario = null;
@@ -54,6 +64,11 @@ namespace BibliotecaEntidades.Entidades
 
             return usuario;
         }
+        /// <summary>
+        /// Comprueba que exista un usuario con el mail ingresado y lo devuelve
+        /// </summary>
+        /// <param name="mail"></param>
+        /// <returns></returns>
         public static Usuario? GetUsuario(string mail)
         {
             Usuario? usuario = null;
@@ -69,7 +84,7 @@ namespace BibliotecaEntidades.Entidades
 
             return usuario;
         }
-        //public por ahora
+        
         private static Usuario? GetUsuario(Usuarios tipoDeUsuario)
         {
             Usuario? usuario = null;
@@ -91,6 +106,14 @@ namespace BibliotecaEntidades.Entidades
             return usuario;
         }
 
+        
+        /// <summary>
+        /// Devuelve el mail y contraseña del primer usuario encontrado segun el tipo
+        /// </summary>
+        /// <param name="tipoDeUsuario">tipo de usuario que se va a buscar</param>
+        /// <param name="mail">variable a la que se asigna el mail</param>
+        /// <param name="contrasenia">variable a la que se asigna el mail</param>
+        /// <returns>Retorna true si encontro un usuario del tipo ingresado</returns>
         public static bool GetUsuario(Usuarios tipoDeUsuario, out string mail, out string contrasenia)
         {
             bool retorno = false;
@@ -108,7 +131,10 @@ namespace BibliotecaEntidades.Entidades
 
             return retorno;
         }
-
+        /// <summary>
+        /// Devuelve todas las compras
+        /// </summary>
+        /// <returns>Retorna una lista de compras</returns>
         public static List<Compra> GetCompras()
         {
             List<Compra> compras = new List<Compra>();

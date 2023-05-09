@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace BibliotecaEntidades.Entidades
-{//haber metodo abstracto que devuelva informacion (dataTable o list) para pasarselo al datagridview
+{
     public abstract class Usuario
-    {//ver, si agergar metodo abtracti para getUsuario o getProducto
+    {
         protected string _nombre;
         protected string _apellido;
         protected int _dni;
@@ -23,27 +23,61 @@ namespace BibliotecaEntidades.Entidades
             this._mail = mail;
             this._contrasenia = contrasenia;
         }
-
+        /// <summary>
+        /// Nombre del usuario
+        /// </summary>
         public string Nombre { get => _nombre; set => _nombre = value; }
+        /// <summary>
+        /// Apellido del usuario
+        /// </summary>
         public string Apellido { get => _apellido; set => _apellido = value; }
+        /// <summary>
+        /// DNI del usuario
+        /// </summary>
         public int Dni { get => _dni; set => _dni = value; }
+        /// <summary>
+        /// Mail del usuario
+        /// </summary>
         public string Mail { get => _mail; set => _mail = value; }
-
+        /// <summary>
+        /// Controla que el mail y contraseña ingresados coincidan con los del usuario
+        /// </summary>
+        /// <param name="usuario">el usuario con el que se comprueba la contraseña</param>
+        /// <param name="mail">el mail del usuario a controlar</param>
+        /// <param name="contrasenia">la contrasenia del usuario a controlar</param>
+        /// <returns>Retorno true si coinciden y falso si no</returns>
         public static bool DatosLogin(Usuario usuario, string mail, string contrasenia)
         {
             return usuario is not null && usuario._mail == mail && usuario._contrasenia == contrasenia;
         }
-
+        /// <summary>
+        /// Devuelve el mail y contraseña de un usuario
+        /// </summary>
+        /// <param name="usuario">Usuario del que se recupera el mail y contrasenia</param>
+        /// <param name="mail">variable a la que se asigna el mail</param>
+        /// <param name="contrasenia">variable a la que se asigna el mail</param>
         public static void DatosLogin(Usuario usuario, out string mail, out string contrasenia)
         {
             mail = usuario._mail;
             contrasenia = usuario._contrasenia;
             
         }
-
+        /// <summary>
+        /// funcion abtracta que genera un DataTable con informacion
+        /// </summary>
+        /// <returns>Retorna un DataTable con la informacion generada</returns>
         public abstract DataTable GenerarTablaDeInfomacion();
+        /// <summary>
+        /// Genera un string con el nombre y apellido del usuario
+        /// </summary>
+        /// <returns> retorna un string con el nombre y apellido del usuario</returns>
         public abstract string MostrarNombreApellido();
-
+        /// <summary>
+        /// Controlar que coincidan el mail del usuario y el mail ingresado
+        /// </summary>
+        /// <param name="u">el usuario con el que se compara su mail con el ingresado</param>
+        /// <param name="mail">el mail con el que se compara con el del usuario</param>
+        /// <returns>Retorna true si coincidan el mail del usuario y el mail ingresado</returns>
         public static bool operator ==(Usuario u, string mail)
         {
             return u.Mail == mail;
