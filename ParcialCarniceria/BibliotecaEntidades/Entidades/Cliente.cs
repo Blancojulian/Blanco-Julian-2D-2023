@@ -55,37 +55,16 @@ namespace BibliotecaEntidades.Entidades
             {
                 compra.NombreCliente = this.MostrarNombreApellido();
                 this._compras.Add(compra);
-                retorno = true;
             }
 
             return retorno;
         }
-        /*
-        public bool RealizarCompra(Compra compra, out string strMensaje)
-        {
-            double total;
-            string msg = string.Empty;
-            bool retorno = compra.CalcularTotal(out total, out msg) && this - total;
-
-            if (retorno)
-            {
-                this._compras.Add(compra);
-                retorno = true;
-            }
-            else
-            {
-                msg = this - total ? msg : "No tiene dinero sufiente";
-            }
-
-            strMensaje = msg;
-
-            return retorno;
-        }*/
+        
         public static void GastarDinero(Cliente cliente, double dinero)
         {
             cliente._dinero -= dinero;
         }
-        //no me convence si no le puedo poner private al operator -
+        
         public static bool operator -(Cliente cliente, double dinero)
         {
             return cliente is not null && cliente._dinero - dinero >= 0;

@@ -27,6 +27,7 @@ namespace ParcialCarniceria.Forms
             ConfiguarForm();
             ConfigurarDataGrid();
             CargarTablaDeClientes();
+            this.dtgvDatos.ClearSelection();
         }
 
 
@@ -56,15 +57,6 @@ namespace ParcialCarniceria.Forms
 
         }
 
-        private void ConfiguarForm()
-        {
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            //this.ControlBox = false;
-            this.ShowIcon = false;
-            //this.FormBorderStyle = FormBorderStyle.None;
-            this.BackColor = Color.FromArgb(222, 122, 34);
-        }
 
         private void dtgvDatos_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -81,7 +73,6 @@ namespace ParcialCarniceria.Forms
                     frmCompras.ShowDialog();
                     this.CargarTablaDeClientes();
                 }
-                //MessageBox.Show($"{e.ColumnIndex} row: {e.RowIndex} mail: {mail}");
 
             }
         }
@@ -89,6 +80,15 @@ namespace ParcialCarniceria.Forms
         private void FrmVendedor_FormClosing(object sender, FormClosingEventArgs e)
         {
             this._frmPadre.Show();
+        }
+
+        private void ConfiguarForm()
+        {
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            //this.ControlBox = false;
+            this.ShowIcon = false;
+            this.BackColor = Color.FromArgb(222, 122, 34);
         }
     }
 }

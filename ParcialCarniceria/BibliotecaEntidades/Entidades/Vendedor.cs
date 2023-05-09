@@ -62,6 +62,10 @@ namespace BibliotecaEntidades.Entidades
         {
             return (Cliente?)Carniceria.GetUsuario(mail);
         }
+        public List<Compra> GetCompras(EstadoVenta estado)
+        {
+            return Carniceria.GetCompras(estado);
+        }
         public override DataTable GenerarTablaDeInfomacion()
         {
             List<Cliente> clientes = Carniceria.Clientes;

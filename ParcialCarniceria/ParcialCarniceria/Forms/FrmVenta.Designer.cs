@@ -265,6 +265,7 @@
             this.Controls.Add(this.tbxBuscar);
             this.Controls.Add(this.dtgvDatos);
             this.Name = "FrmVenta";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Venta";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmVenta_FormClosing);
             this.Load += new System.EventHandler(this.FrmVenta_Load);

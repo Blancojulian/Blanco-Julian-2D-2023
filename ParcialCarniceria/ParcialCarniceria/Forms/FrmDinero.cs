@@ -18,15 +18,11 @@ namespace ParcialCarniceria.Forms
         {
             InitializeComponent();
             this._cliente = cliente;
-        }
-        /*
-        public FrmDinero(Cliente cliente) : this()
-        {
-            this._cliente = cliente;
-        } */  
+        }  
 
         private void FrmDinero_Load(object sender, EventArgs e)
         {
+            this.ConfiguarForm();
             this.lblBienvenida.Text = $"Bienvenido {this._cliente.Nombre} {this._cliente.Apellido}";
             this.nudDinero.Value = (decimal)this._cliente.Dinero;
         }
@@ -58,6 +54,15 @@ namespace ParcialCarniceria.Forms
         private void btnConfirmar_Click(object sender, EventArgs e)
         {
             this.ConfirmarDineroDisponible();
+        }
+
+        private void ConfiguarForm()
+        {
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.ControlBox = false;
+            this.ShowIcon = false;
+            this.BackColor = Color.FromArgb(209, 157, 250);
         }
     }
 }

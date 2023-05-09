@@ -24,16 +24,15 @@ namespace ParcialCarniceria.Forms
 
         private void FrmDetalleCompra_Load(object sender, EventArgs e)
         {
+            this.ConfiguarForm();
             this.CargarDetalleProductos();
-            //MessageBox.Show($"{this._compra.Credito}");
+
             if (this._compra.Credito)
             {
                 this.rbtnCredito.Checked = true;
-                //this.rbtnDebito.Checked = false;
             }
             else
             {
-                //this.rbtnCredito.Checked = false;
                 this.rbtnDebito.Checked = true;
             }
         }
@@ -65,8 +64,7 @@ namespace ParcialCarniceria.Forms
 
         private void btnConfirmar_Click(object sender, EventArgs e)
         {
-            //bool respuesta = false;
-            //MessageBox.Show($"{} - {}");
+            
             if ((this.rbtnDebito.Checked || this.rbtnCredito.Checked) &&
                 this._compra.Productos.Count > 0 &&
                 this._cliente.RealizarCompra(this._compra))
@@ -88,6 +86,15 @@ namespace ParcialCarniceria.Forms
         {
             this.DialogResult = DialogResult.Cancel;
             this.Close();
+        }
+
+        private void ConfiguarForm()
+        {
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.ControlBox = false;
+            this.ShowIcon = false;
+            this.BackColor = Color.FromArgb(209, 157, 250);
         }
     }
 }

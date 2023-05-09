@@ -13,7 +13,7 @@ namespace BibliotecaEntidades.Entidades
         private Dictionary<string, double> _productos;
         private bool _vendido;
         private bool _credito;
-        private string _nombreCliente;
+        private string? _nombreCliente;
 
         
         public Compra(Dictionary<string, double> productos, bool credito)
@@ -22,7 +22,11 @@ namespace BibliotecaEntidades.Entidades
             this._vendido = false;
             this._credito = credito;
         }
-        public Compra() : this(new Dictionary<string, double>(), false)
+        public Compra(bool credito) : this(new Dictionary<string, double>(), credito)
+        {
+
+        }
+        public Compra() : this(false)
         {
 
         }
@@ -30,7 +34,7 @@ namespace BibliotecaEntidades.Entidades
         public bool Vendido { get => this._vendido; set => this._vendido = value; }
         public bool Credito { get => this._credito; set => this._credito = value; }
 
-        public string NombreCliente { get => this._nombreCliente; set => this._nombreCliente = value; }
+        public string? NombreCliente { get => this._nombreCliente; set => this._nombreCliente = value; }
         public string CreditoDebito => Credito ? "Credito" : "Debito";
         public string VentaRealizada => Vendido ? "Realizada" : "En proceso";
 

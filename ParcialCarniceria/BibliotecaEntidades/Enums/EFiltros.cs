@@ -1,4 +1,5 @@
-﻿public enum Filtros
+﻿
+public enum Filtros
 {
     Disponible,
     No_Disponible,

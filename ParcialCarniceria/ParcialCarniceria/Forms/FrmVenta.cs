@@ -16,21 +16,21 @@ namespace ParcialCarniceria.Forms
         private Cliente _cliente;
         private Compra _compra;
         private Form _frmPadre;
-        public FrmVenta(Cliente cliente, Form frmPadre)
+        public FrmVenta(Cliente cliente, Form frmPadre) : this(cliente, frmPadre, new Compra())
         {
             InitializeComponent();
-            this._cliente = cliente;
-            this._frmPadre = frmPadre;
-            this._compra = new Compra();
         }
-        /*
-        public FrmVenta(Cliente cliente) : this()
+        
+        private FrmVenta(Cliente cliente, Form frmPadre, Compra compra)
         {
             this._cliente = cliente;
-        }*/
+            this._frmPadre = frmPadre;
+            this._compra = compra;
+        }
 
         private void FrmVenta_Load(object sender, EventArgs e)
         {
+            this.ConfiguarForm();
             this.CargarMontos();
             this.ConfigurarDataGrid();
             this.CargarTablaDeProductos();
@@ -51,7 +51,7 @@ namespace ParcialCarniceria.Forms
         }
 
         private void BuscarProducto()
-        {//usar cadena.Contains(cadena)
+        {
             string searchValue = this.tbxBuscar.Text;
             searchValue = searchValue.ToLower().Trim();
             try
@@ -63,16 +63,16 @@ namespace ParcialCarniceria.Forms
                 foreach (DataGridViewRow row in this.dtgvDatos.Rows)
                 {
                     str = (string)row.Cells["Producto"].Value;
-                    //MessageBox.Show($"{string.IsNullOrEmpty(str)} - {row.Cells["Producto"].Value} - {str.ToLower()} = {searchValue.ToLower()}");
+                    
                     if (row.Cells["Producto"].Value is not null &&
                         !string.IsNullOrEmpty(str) &&
                         !string.IsNullOrWhiteSpace(str) &&
                         !string.IsNullOrEmpty(searchValue) &&
-                        //row.Cells["Producto"].Value.ToString() is not null &&
                         str.ToLower().Contains(searchValue) )
                     {
                         rowIndex = row.Index;
                         this.dtgvDatos.Rows[rowIndex].Selected = true;
+                        this.dtgvDatos.FirstDisplayedScrollingRowIndex = rowIndex;
                         valueResult = true;
                         break;
 
@@ -207,7 +207,9 @@ namespace ParcialCarniceria.Forms
 
         private void btnConfirmar_Click(object sender, EventArgs e)
         {
-            if (this._compra.Productos.Count > 0 && this._compra.Total > 0)
+            double total = this._compra.Total;
+            bool dineroSuficiente = this._cliente - total;
+            if (this._compra.Productos.Count > 0 && this._compra.Total > 0 && dineroSuficiente)
             {
                 FrmDetalleCompra frmCompra = new FrmDetalleCompra(this._cliente, this._compra);
                 frmCompra.ShowDialog();
@@ -219,6 +221,11 @@ namespace ParcialCarniceria.Forms
                     MessageBox.Show("Se realizo la compra con exito");
 
                 }
+            }
+            else if (!dineroSuficiente)
+            {
+                MessageBox.Show("No tiene dinero suficiente para realizar la compra");
+
             }
             else
             {
@@ -238,6 +245,15 @@ namespace ParcialCarniceria.Forms
             FrmDinero frmDinero = new FrmDinero(this._cliente);
             frmDinero.ShowDialog();
             this.CargarMontos();
+        }
+
+        private void ConfiguarForm()
+        {
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            //this.ControlBox = false;
+            this.ShowIcon = false;
+            this.BackColor = Color.FromArgb(209, 157, 250);
         }
     }
 }

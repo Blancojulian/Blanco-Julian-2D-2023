@@ -29,6 +29,7 @@ namespace ParcialCarniceria.Forms
             
             this.cbxFiltro.DataSource = Enum.GetValues(typeof(Filtros));
             this.cbxFiltro.SelectedItem = Filtros.Disponible;
+            this.ConfiguarForm();
             this.ConfigurarDataGrid();
             this.CargarTablaDeProductos();
             this.lblVendedor.Text = this._vendedor.MostrarNombreApellido();
@@ -47,7 +48,7 @@ namespace ParcialCarniceria.Forms
             this.dtgvDatos.Update();
             this.dtgvDatos.Refresh();
             //this.dtgvDatos.ClearSelection();
-            if (this.dtgvDatos.Rows.Count > 0 && this._lastIndex <= this.dtgvDatos.Rows.Count)
+            if (this.dtgvDatos.Rows.Count > 0 && this._lastIndex < this.dtgvDatos.Rows.Count)
             {
                 this.dtgvDatos.Rows[this._lastIndex].Selected = true;
             }
@@ -96,7 +97,7 @@ namespace ParcialCarniceria.Forms
         }
 
         private void BuscarProducto()
-        {//usar cadena.Contains(cadena)
+        {
             string searchValue = this.tbxBuscar.Text;
             searchValue = searchValue.ToLower().Trim();
             try
@@ -108,16 +109,16 @@ namespace ParcialCarniceria.Forms
                 foreach (DataGridViewRow row in this.dtgvDatos.Rows)
                 {
                     str = (string)row.Cells["Producto"].Value;
-                    //MessageBox.Show($"{string.IsNullOrEmpty(str)} - {row.Cells["Producto"].Value} - {str.ToLower()} = {searchValue.ToLower()}");
+                    
                     if (row.Cells["Producto"].Value is not null &&
                         !string.IsNullOrEmpty(str) &&
                         !string.IsNullOrWhiteSpace(str) &&
                         !string.IsNullOrEmpty(searchValue) &&
-                        //row.Cells["Producto"].Value.ToString() is not null &&
                         str.ToLower().Contains(searchValue))
                     {
                         rowIndex = row.Index;
                         this.dtgvDatos.Rows[rowIndex].Selected = true;
+                        this.dtgvDatos.FirstDisplayedScrollingRowIndex = rowIndex;
                         valueResult = true;
                         break;
 
@@ -237,6 +238,15 @@ namespace ParcialCarniceria.Forms
                 MessageBox.Show("El producto no existe");
 
             }
+        }
+
+        private void ConfiguarForm()
+        {
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            //this.ControlBox = false;
+            this.ShowIcon = false;
+            this.BackColor = Color.FromArgb(222, 122, 34);
         }
     }
 }

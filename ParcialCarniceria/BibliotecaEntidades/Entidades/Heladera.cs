@@ -151,7 +151,7 @@ namespace BibliotecaEntidades.Entidades
             cortes.Add("Lomo", new DetalleCorte(0, 550, Categorias.Segunda));
             cortes.Add("Matambre", new DetalleCorte(50, 800, Categorias.Primera));
             cortes.Add("Peceto", new DetalleCorte(0, 500, Categorias.Primera));
-            cortes.Add("Vacio", new DetalleCorte(0, 500, Categorias.Primera));
+            cortes.Add("Vacio", new DetalleCorte(10, 500, Categorias.Primera));
             cortes.Add("Bola de Lomo", new DetalleCorte(50, 900, Categorias.Primera));
 
 

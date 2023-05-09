@@ -27,10 +27,12 @@ namespace ParcialCarniceria.Forms
         {
             this.lblCliente.Text += " " + this._cliente.MostrarNombreApellido();
             this.lblDineroDisponible.Text = $"{this._cliente.Dinero}";
-
+            ConfiguarForm();
             ConfigurarDataGrid();
             CargarTablaDeCompras();
             this.dtgvDatos.ClearSelection();
+            this.dtgvDatos.ClearSelection();
+
         }
 
         private void CargarTablaDeCompras()
@@ -120,6 +122,15 @@ namespace ParcialCarniceria.Forms
         {
             
             return (Compra)this.dtgvDatos.CurrentRow.DataBoundItem;
+        }
+
+        private void ConfiguarForm()
+        {
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.ControlBox = false;
+            this.ShowIcon = false;
+            this.BackColor = Color.FromArgb(222, 122, 34);
         }
     }
 }

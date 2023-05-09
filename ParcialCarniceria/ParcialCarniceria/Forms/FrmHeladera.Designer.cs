@@ -195,9 +195,9 @@
             this.lblBuscar.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point);
             this.lblBuscar.Location = new System.Drawing.Point(149, 83);
             this.lblBuscar.Name = "lblBuscar";
-            this.lblBuscar.Size = new System.Drawing.Size(50, 19);
+            this.lblBuscar.Size = new System.Drawing.Size(111, 19);
             this.lblBuscar.TabIndex = 13;
-            this.lblBuscar.Text = "Buscar";
+            this.lblBuscar.Text = "Buscar Producto";
             // 
             // btnLimpiar
             // 
@@ -208,6 +208,7 @@
             this.btnLimpiar.TabIndex = 12;
             this.btnLimpiar.Text = "Limpiar";
             this.btnLimpiar.UseVisualStyleBackColor = true;
+            this.btnLimpiar.Click += new System.EventHandler(this.btnLimpiar_Click);
             // 
             // tbxBuscar
             // 

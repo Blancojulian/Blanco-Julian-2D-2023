@@ -20,7 +20,7 @@ namespace ParcialCarniceria.Forms
 
         private void FrmLogin_Load(object sender, EventArgs e)
         {
-
+            this.ConfiguarForm();
         }
 
         private void CompletarDatos()
@@ -50,6 +50,7 @@ namespace ParcialCarniceria.Forms
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
+            
             Usuario? usuario = Carniceria.GetUsuario(this.tbxMail.Text, this.tbxContrasenia.Text);
             FrmDinero frmDinero;
             
@@ -85,6 +86,15 @@ namespace ParcialCarniceria.Forms
         private void btnCompletarDatos_Click(object sender, EventArgs e)
         {
             this.CompletarDatos();
+        }
+
+        private void ConfiguarForm()
+        {
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            //this.ControlBox = false;
+            this.ShowIcon = false;
+            this.BackColor = Color.FromArgb(239, 254, 207);
         }
     }
 }
