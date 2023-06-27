@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32811.315
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SegundoParcial", "SegundoParcial\SegundoParcial.csproj", "{07EC6600-452E-4AAC-BC53-4B29670FFE78}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BibliotecaEntidades", "BibliotecaEntidades\BibliotecaEntidades.csproj", "{CF6C876E-C5BA-4037-AA42-689D3D7091FC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{07EC6600-452E-4AAC-BC53-4B29670FFE78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07EC6600-452E-4AAC-BC53-4B29670FFE78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07EC6600-452E-4AAC-BC53-4B29670FFE78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07EC6600-452E-4AAC-BC53-4B29670FFE78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF6C876E-C5BA-4037-AA42-689D3D7091FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF6C876E-C5BA-4037-AA42-689D3D7091FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF6C876E-C5BA-4037-AA42-689D3D7091FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF6C876E-C5BA-4037-AA42-689D3D7091FC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6C7E2A86-DE72-4978-A5B4-E314CEA04025}
+	EndGlobalSection
+EndGlobal
