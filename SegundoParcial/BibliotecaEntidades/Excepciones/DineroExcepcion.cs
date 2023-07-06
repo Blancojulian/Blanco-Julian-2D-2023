@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 
 namespace BibliotecaEntidades.Excepciones
 {
-    internal class DineroInsufiente : Exception
+    public class DineroExcepcion : Exception
     {
-        public DineroInsufiente()
+        public DineroExcepcion()
         {
         }
 
-        public DineroInsufiente(string? message) : base(message)
+        public DineroExcepcion(string? message) : base(message)
         {
         }
 
-        public DineroInsufiente(string? message, Exception? innerException) : base(message, innerException)
+        public DineroExcepcion(string? message, Exception? innerException) : base(message, innerException)
         {
         }
 

@@ -1,4 +1,5 @@
 ﻿using BibliotecaEntidades.Entidades;
+using BibliotecaEntidades.Excepciones;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,41 +13,51 @@ using System.Windows.Forms;
 
 namespace SegundoParcial.Vista
 {
-    public partial class FrmVendedor : Form
+    public partial class FrmVendedor : FrmBase
     {//hay que volver hacer el form que muestre todas las facturas y tenga un checkbox para elegir cuales pasar a texto
         private Vendedor _vendedor;
-        private Form _frmPadre;
-        private SoundPlayer _playerError;
-        private SoundPlayer _playerClick;
 
-        public FrmVendedor(Vendedor vendedor, Form frmPadre)
+        public FrmVendedor(Vendedor vendedor) : base()
         {
             InitializeComponent();
             this._vendedor = vendedor;
-            this._frmPadre = frmPadre;
-            this._playerClick = new SoundPlayer(Properties.Resources.click);
-            this._playerError = new SoundPlayer(Properties.Resources.error);
         }
 
         private void FrmVendedor_Load(object sender, EventArgs e)
         {
-            ConfiguarForm();
+            this.lblVendedor.Text = this._vendedor.MostrarNombreApellido();
             ConfigurarDataGrid();
-            CargarTablaDeClientes();
+            CargarTablaDeFacturas();
             this.dtgvDatos.ClearSelection();
+
+            this._vendedor.OnVentaRealizada += NotificarVentaRealizada;
+
+        }
+        
+        private void NotificarVentaRealizada(string mensaje)
+        {
+            MessageBox.Show(mensaje);
         }
 
-        private void FrmVendedor_FormClosing(object sender, FormClosingEventArgs e)
+        private Factura GetFactura()
         {
-            this._frmPadre.Show();
+            if (this.dtgvDatos.CurrentRow is null && this.dtgvDatos.SelectedRows.Count < 1)
+            {
+                throw new ErrorOperacionVentaExcepcion("Debe selecionar una factura");
+            }
+
+            if (this.dtgvDatos.SelectedRows.Count > 1)
+            {
+                throw new ErrorOperacionVentaExcepcion("Debe selecionar una sola factura");
+            }
+
+            return (Factura)this.dtgvDatos.CurrentRow.DataBoundItem;
         }
 
-
-        private void CargarTablaDeClientes()
+        private void CargarTablaDeFacturas()
         {
 
-            this.dtgvDatos.DataSource = this._vendedor.GetClientes();
-            this.dtgvDatos.Columns["Seleccionar"].DisplayIndex = this.dtgvDatos.Columns.Count - 1;
+            this.dtgvDatos.DataSource = this._vendedor.GetFacturas(EstadoVenta.Pendiente);
             this.dtgvDatos.ClearSelection();
 
 
@@ -68,15 +79,17 @@ namespace SegundoParcial.Vista
 
         }
 
-        private void ConfiguarForm()
+        protected override void ConfigurarForm()
         {
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            //this.ControlBox = false;
-            this.ShowIcon = false;
+            base.ConfigurarForm();
+            this.ControlBox = false;
+
+        }
+        protected override void ConfigurarColorForm()
+        {
             this.BackColor = Color.FromArgb(222, 122, 34);
         }
-
+        //eliminar no se va usar
         private void dtgvDatos_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             DataGridView senderGrid = (DataGridView)sender;
@@ -89,10 +102,10 @@ namespace SegundoParcial.Vista
                 Cliente? cliente = this._vendedor.GetUsuario(mail);
 
                 if (cliente is not null)
-                {
+                {/*cambiar
                     FrmListadoCompras frmCompras = new FrmListadoCompras(this._vendedor, cliente);
                     frmCompras.ShowDialog();
-                    this.CargarTablaDeClientes();
+                    this.CargarTablaDeClientes();*/
                 }
 
             }
@@ -113,6 +126,48 @@ namespace SegundoParcial.Vista
 
             this.dtgvDatos.ClearSelection();
 
+        }
+
+        private void btnRealizarVenta_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                this._playerClick.Play();
+                Factura factura = GetFactura();
+                Cliente? cliente = this._vendedor.GetCliente(factura.DniCliente);
+                if (this._vendedor.RealizarVenta(cliente, factura))
+                {
+                    CargarTablaDeFacturas();
+                }
+            }
+            catch (ErrorOperacionVentaExcepcion ex)
+            {
+                this._playerError.Play();
+                MessageBox.Show(ex.Message);
+            }
+            catch (DineroExcepcion ex)
+            {
+                this._playerError.Play();
+                MessageBox.Show(ex.Message);
+            }
+            catch (VentaYaRealizada ex)
+            {
+                this._playerError.Play();
+                MessageBox.Show(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                this._playerError.Play();
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void btnSalir_Click(object sender, EventArgs e)
+        {
+            this._playerClick.Play();
+
+            this.DialogResult = DialogResult.None;
+            this.Close();
         }
     }
 }

@@ -10,7 +10,7 @@ using BibliotecaEntidades.DAO;
 
 namespace BibliotecaEntidades.MetodosDeExtension
 {
-    internal static class Extension
+    public static class Extension
     {
         public static string PasarANumeroFactura(this int num)
         {
@@ -20,7 +20,7 @@ namespace BibliotecaEntidades.MetodosDeExtension
 
         public static bool EsCadenaVaciaOTieneEspacios(this string str)
         {
-            return string.IsNullOrWhiteSpace(str) && string.IsNullOrEmpty(str);
+            return string.IsNullOrWhiteSpace(str) || string.IsNullOrEmpty(str);
         }
     }
 }

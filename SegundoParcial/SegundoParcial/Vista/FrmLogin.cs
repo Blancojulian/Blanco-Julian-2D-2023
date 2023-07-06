@@ -12,15 +12,11 @@ using System.Windows.Forms;
 
 namespace SegundoParcial.Vista
 {
-    public partial class FrmLogin : Form
+    public partial class FrmLogin : FrmBase
     {
-        private SoundPlayer _playerError;
-        private SoundPlayer _playerClick;
-        public FrmLogin()
+        public FrmLogin() : base()
         {
             InitializeComponent();
-            this._playerClick = new SoundPlayer(Properties.Resources.click);
-            this._playerError = new SoundPlayer(Properties.Resources.error);
         }
 
         private void FrmLogin_Load(object sender, EventArgs e)
@@ -42,7 +38,8 @@ namespace SegundoParcial.Vista
 
                 if (frmDinero.DialogResult == DialogResult.OK)
                 {//antes era FrmVenta
-                    FrmCliente frmVenta = new FrmCliente((Cliente)usuario, this);
+                    FrmCliente frmVenta = new FrmCliente((Cliente)usuario);
+                    frmVenta.OnAbrirLogin += MostrarFormLogin;
                     this.Hide();
                     frmVenta.Show();
 
@@ -51,7 +48,8 @@ namespace SegundoParcial.Vista
             }
             else if (usuario is Vendedor)
             {
-                FrmHeladera frmHeladera = new FrmHeladera((Vendedor)usuario, this);
+                FrmHeladera frmHeladera = new FrmHeladera((Vendedor)usuario);
+                frmHeladera.OnAbrirLogin += MostrarFormLogin;
                 this.Hide();
                 frmHeladera.Show();
             }
@@ -99,18 +97,23 @@ namespace SegundoParcial.Vista
             catch (Exception ex)
             {
 
-                MessageBox.Show("Error no hay datos para el tipo de usuario");
+                MostrarVentanaDeError(ex);
 
             }   
         }
 
-        private void ConfiguarForm()
+        protected override void ConfigurarForm()
         {
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.ControlBox = false;
-            this.ShowIcon = false;
+            base.ConfigurarForm();
+        }
+        protected override void ConfigurarColorForm()
+        {
             this.BackColor = Color.FromArgb(239, 254, 207);
+        }
+
+        private void MostrarFormLogin()
+        {
+            this.Show();
         }
     }
 }

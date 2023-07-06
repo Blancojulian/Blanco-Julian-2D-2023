@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BibliotecaEntidades.Excepciones
 {
-    internal class ArchivoIncorrectoExcepcion : Exception
+    public class ArchivoIncorrectoExcepcion : Exception
     {
         public ArchivoIncorrectoExcepcion()
         {

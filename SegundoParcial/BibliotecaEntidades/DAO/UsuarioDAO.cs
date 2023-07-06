@@ -183,6 +183,11 @@ namespace BibliotecaEntidades.DAO
                 }
             }
 
+            if (usuario is null)
+            {
+                throw new Exception($"usuario esta vacio {tipoDeUsuario}: {(int)tipoDeUsuario}");
+            }
+
             return usuario;
         }
         /// <summary>
@@ -238,7 +243,7 @@ namespace BibliotecaEntidades.DAO
                 _sqlCommand.Parameters.AddWithValue("@dni", datos.Dni);
                 _sqlCommand.Parameters.AddWithValue("@nombre", datos.Nombre);
                 _sqlCommand.Parameters.AddWithValue("@apellido", datos.Apellido);
-                _sqlCommand.Parameters.AddWithValue("@email", datos.Mail);
+                _sqlCommand.Parameters.AddWithValue("@mail", datos.Mail);
                 _sqlCommand.Parameters.AddWithValue("@contrasenia", Usuario.DatosLogin(datos));
 
                 filas = _sqlCommand.ExecuteNonQuery();
@@ -260,7 +265,7 @@ namespace BibliotecaEntidades.DAO
         public override int Update(int dni, Usuario datos)
         {
             int filas = 0;
-            string comando = "UPDATE Usuario SET nombre = @nombre, apellido = @apellido, email = @email, contrasenia = @contrasenia WHERE dni = @dni;";
+            string comando = "UPDATE Usuario SET nombre = @nombre, apellido = @apellido, mail = @mail, contrasenia = @contrasenia WHERE dni = @dni";
 
             try
             {
@@ -269,10 +274,10 @@ namespace BibliotecaEntidades.DAO
                 _sqlCommand.Parameters.AddWithValue("@dni", dni);
                 _sqlCommand.Parameters.AddWithValue("@nombre", datos.Nombre);
                 _sqlCommand.Parameters.AddWithValue("@apellido", datos.Apellido);
-                _sqlCommand.Parameters.AddWithValue("@email", datos.Mail);
+                _sqlCommand.Parameters.AddWithValue("@mail", datos.Mail);
                 _sqlCommand.Parameters.AddWithValue("@contrasenia", Usuario.DatosLogin(datos));
 
-                if (datos.GetType() == typeof(Cliente))
+                if (datos.GetType() == typeof(Cliente) || datos is Cliente)
                 {
                     _sqlCommand.Parameters.AddWithValue("@monto", (float)((Cliente)datos).Dinero);
                     comando += " UPDATE Dinero SET monto = @monto WHERE dniCliente = @dni;";
@@ -349,7 +354,7 @@ namespace BibliotecaEntidades.DAO
 
         private string ComandoAddPorTipoDeUsuarioYAgregarParametros(Type tipo, Usuario datos)
         {
-            string comando = "INSERT INTO Usuario(dni, nombre, apellido, email, contrasenia, idTipoUsuario) VALUES(@dni, @nombre, @apellido, @email, @contrasenia, @idTipoUsuario);";
+            string comando = "INSERT INTO Usuario(dni, nombre, apellido, mail, contrasenia, idTipoUsuario) VALUES(@dni, @nombre, @apellido, @mail, @contrasenia, @idTipoUsuario);";
 
             string command = "SELECT * FROM Usuario LEFT JOIN Dinero ON Usuario.dni = Dinero.dniCliente";
 

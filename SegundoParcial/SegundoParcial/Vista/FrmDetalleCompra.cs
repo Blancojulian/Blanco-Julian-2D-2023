@@ -12,25 +12,20 @@ using System.Windows.Forms;
 
 namespace SegundoParcial.Vista
 {
-    public partial class FrmDetalleCompra : Form
+    public partial class FrmDetalleCompra : FrmBase
     {
         private Cliente _cliente;
         private Factura _factura;
-        private SoundPlayer _playerError;
-        private SoundPlayer _playerClick;
 
-        public FrmDetalleCompra(Cliente cliente, Factura factura)
+        public FrmDetalleCompra(Cliente cliente, Factura factura) : base()
         {
             InitializeComponent();
             this._cliente = cliente;
             this._factura = factura;
-            this._playerClick = new SoundPlayer(Properties.Resources.click);
-            this._playerError = new SoundPlayer(Properties.Resources.error);
         }
 
         private void FrmDetalleCompra_Load(object sender, EventArgs e)
         {
-            this.ConfiguarForm();
             this.CargarDetalleProductos();
 
             if (this._factura.Credito)
@@ -51,15 +46,16 @@ namespace SegundoParcial.Vista
         }
 
 
-        private void ConfiguarForm()
+        protected override void ConfigurarForm()
         {
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
+            base.ConfigurarForm();
             this.ControlBox = false;
-            this.ShowIcon = false;
-            this.BackColor = Color.FromArgb(209, 157, 250);
         }
+        protected override void ConfigurarColorForm()
+        {
+            this.BackColor = Color.FromArgb(209, 157, 250);
 
+        }
         private void btnConfirmar_Click(object sender, EventArgs e)
         {
             try

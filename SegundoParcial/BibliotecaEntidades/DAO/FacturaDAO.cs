@@ -7,10 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
+using BibliotecaEntidades.Interfaces;
 
 namespace BibliotecaEntidades.DAO
 {
-    internal class FacturaDAO : BaseDAO<Factura>
+    internal class FacturaDAO : BaseDAO<Factura>, IConsultaSQL<Factura, EstadoVenta>
     {
         public FacturaDAO() : base()
         {
@@ -24,7 +25,7 @@ namespace BibliotecaEntidades.DAO
             try
             {
                 _sqlCommand.Parameters.Clear();
-                _sqlCommand.CommandText = "SELECT * FROM Factura";
+                _sqlCommand.CommandText = "SELECT *, CONCAT(Usuario.nombre,' ',Usuario.apellido) AS nombreCompleto FROM Factura LEFT JOIN Usuario ON Factura.dniCliente = Usuario.dni";
                 _sqlConnection.Open();
 
                 using (SqlDataReader dataReader = _sqlCommand.ExecuteReader())
@@ -87,6 +88,58 @@ namespace BibliotecaEntidades.DAO
             return lista;
         }
 
+        public List<Factura> BuscarCoincidencias(string cadena, EstadoVenta filtro)
+        {
+            List<Factura> lista = new List<Factura>();
+            string comando = "SELECT *, CONCAT(Usuario.nombre,' ',Usuario.apellido) AS nombreCompleto FROM Factura " +
+                "LEFT JOIN Usuario ON Factura.dniCliente = Usuario.dni (Factura.numeroFactura LIKE '%@cadena%' OR " +
+                "Factura.dniCliente LIKE '%@cadena%' OR Usuario.nombre LIKE '%@cadena%' OR Usuario.apellido LIKE " +
+                "'%@cadena%' OR nombreCompleto LIKE '%@cadena%')";
+
+            if (filtro == EstadoVenta.Pendiente)
+            {
+                comando += " AND Factura.idEstadoFactura = 0;";
+
+            }
+            else if (filtro == EstadoVenta.Realizada)
+            {
+                comando += " AND Factura.idEstadoFactura = 1;";
+
+            }
+
+            try
+            {
+                _sqlCommand.Parameters.Clear();
+                _sqlCommand.CommandText = comando;
+                _sqlCommand.Parameters.AddWithValue("@cadena", cadena);
+                _sqlConnection.Open();
+
+                using (SqlDataReader dataReader = _sqlCommand.ExecuteReader())
+                {
+                    while (dataReader.Read())
+                    {
+                        lista.Add((Factura)dataReader);
+                    }
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (_sqlConnection.State == ConnectionState.Open)
+                {
+                    _sqlConnection.Close();
+                }
+            }
+
+            GetItemsParaFacturas(lista);
+
+            return lista;
+        }
+
         public override Factura? Get(int numeroFactura)
         {
             Factura? factura = null;
@@ -95,7 +148,7 @@ namespace BibliotecaEntidades.DAO
             try
             {
                 _sqlCommand.Parameters.Clear();
-                _sqlCommand.CommandText = "SELECT * FROM Factura WHERE numeroFactura = @numeroFactura";
+                _sqlCommand.CommandText = "SELECT *, CONCAT(Usuario.nombre,' ',Usuario.apellido) AS nombreCompleto FROM Factura LEFT JOIN Usuario ON Factura.dniCliente = Usuario.dni WHERE Factura.numeroFactura = @numeroFactura";
                 _sqlCommand.Parameters.AddWithValue("@numeroFactura", numeroFactura);
                 _sqlConnection.Open();
 
@@ -119,7 +172,10 @@ namespace BibliotecaEntidades.DAO
                 }
             }
 
-            GetItems(factura);
+            if (factura is not null)
+            {
+                GetItems(factura);
+            }
 
             return factura;
         }
@@ -127,7 +183,7 @@ namespace BibliotecaEntidades.DAO
         public override int Add(Factura datos)
         {
             int filas = 0;
-            string comando = "INSERT INTO Factura VALUES(@numeroFactura, @dniCliente, @vendido, @pagoConCredito);";
+            string comando = "INSERT INTO Factura VALUES(@numeroFactura, @dniCliente, @idEstadoFactura, @pagoConCredito);";
 
             try
             {
@@ -136,7 +192,7 @@ namespace BibliotecaEntidades.DAO
 
                 _sqlCommand.Parameters.AddWithValue("@numeroFactura", datos.NumeroFactura);
                 _sqlCommand.Parameters.AddWithValue("@dniCliente", datos.DniCliente);
-                _sqlCommand.Parameters.AddWithValue("@vendido", datos.Vendido);
+                _sqlCommand.Parameters.AddWithValue("@idEstadoFactura", (int)datos.Estado);
                 _sqlCommand.Parameters.AddWithValue("@pagoConCredito", datos.Credito);
 
                 if (datos.Productos.Count > 0)
@@ -171,12 +227,12 @@ namespace BibliotecaEntidades.DAO
             {
                 _sqlCommand.Parameters.Clear();
                 _sqlConnection.Open();
-                _sqlCommand.CommandText = "UPDATE Factura SET dniCliente = @dniCliente, vendido = @vendido, pagoConCredito = @pagoConCredito WHERE numeroFactura = @numeroFactura";
+                _sqlCommand.CommandText = "UPDATE Factura SET dniCliente = @dniCliente, idEstadoFactura = @idEstadoFactura, pagoConCredito = @pagoConCredito WHERE numeroFactura = @numeroFactura";
 
 
                 _sqlCommand.Parameters.AddWithValue("@numeroFactura", numeroFactura);
                 _sqlCommand.Parameters.AddWithValue("@dniCliente", datos.DniCliente);
-                _sqlCommand.Parameters.AddWithValue("@vendido", datos.Vendido);
+                _sqlCommand.Parameters.AddWithValue("@idEstadoFactura", (int)datos.Estado);
                 _sqlCommand.Parameters.AddWithValue("@pagoConCredito", datos.Credito);
 
                 filas = _sqlCommand.ExecuteNonQuery();
@@ -225,15 +281,17 @@ namespace BibliotecaEntidades.DAO
 
             return filas;
         }
-
+        //hacer sync
         private void GetItemsParaFacturas(List<Factura> lista)
         {
             foreach (Factura factura in lista)
-            {
+            {/*
                 Task.Run(() =>
                 {
                     GetItems(factura);
-                });
+                });*/
+                GetItems(factura);
+
             }
         }
 
@@ -279,14 +337,16 @@ namespace BibliotecaEntidades.DAO
             try
             {
                 _sqlCommand.Parameters.Clear();
-                _sqlCommand.CommandText = "SELECT MAX(numeroFactura) FROM Factura";
+                _sqlCommand.CommandText = "SELECT MAX(numeroFactura) AS numeroFactura FROM Factura";
                 _sqlConnection.Open();
 
                 using (SqlDataReader dataReader = _sqlCommand.ExecuteReader())
                 {
                     if (dataReader.Read())
                     {
-                        ultimoNumeroFactura = int.Parse(dataReader["numeroFactura"]?.ToString());
+                        //double monto = r["monto"] is DBNull ? 0d : double.Parse(Convert.ToString(r["monto"]));
+
+                        ultimoNumeroFactura = int.Parse(dataReader["numeroFactura"]?.ToString() ?? "1");
                     }
                 }
             }
@@ -303,36 +363,37 @@ namespace BibliotecaEntidades.DAO
             }
             return ultimoNumeroFactura;
         }
-
+        
         private string ComandoGetAllPorEstadoVenta(EstadoVenta estadoVenta)
         {
-            string comando = "SELECT * FROM Factura";
+            string comando = "SELECT *, CONCAT(Usuario.nombre,' ',Usuario.apellido) FROM Factura LEFT JOIN Usuario ON Factura.dniCliente = Usuario.dni";
 
-            if (estadoVenta == EstadoVenta.En_Proceso)
+            if (estadoVenta == EstadoVenta.Pendiente)
             {
-                comando += " WHERE vendido = @vendido";
-                _sqlCommand.Parameters.AddWithValue("@vendido", false);
-            } else if (estadoVenta == EstadoVenta.En_Proceso)
+                comando += " WHERE Factura.idEstadoFactura = @idEstadoFactura";
+                _sqlCommand.Parameters.AddWithValue("@idEstadoFactura", (int)estadoVenta);
+            } else if (estadoVenta == EstadoVenta.Pendiente)
             {
-                comando += " WHERE vendido = @vendido";
-                _sqlCommand.Parameters.AddWithValue("@vendido", true);
+                comando += " WHERE Factura.idEstadoFactura = @idEstadoFactura";
+                _sqlCommand.Parameters.AddWithValue("@idEstadoFactura", (int)estadoVenta);
             }
 
             return comando;
         }
-        private string ComandoAddItemsYAgregarParametros(int numeroFactura, Dictionary<int, double> listaProductos)
+        private string ComandoAddItemsYAgregarParametros(int numeroFactura, Dictionary<int, FacturaItem> listaProductos)
         {
             var sb = new StringBuilder();
             string[] parameters = new string[listaProductos.Count];
             int i = 0;
             //no es necesario agregar parametro para @numeroFactura porque se hace antes en el metodo Add
-            foreach (KeyValuePair<int, double> producto in listaProductos)
+            foreach (KeyValuePair<int, FacturaItem> producto in listaProductos)
             {
                 i++;
-                sb.AppendLine($"INSERT INTO Corte VALUES(@numeroFactura, @idCorte{i}, @cantidadKilos{i});");
+                sb.AppendLine($"INSERT INTO Corte VALUES(@numeroFactura, @idCorte{i}, @cantidadKilos{i}, @precioKiloCorte{i});");
 
                 _sqlCommand.Parameters.AddWithValue($"@idCorte{i}", producto.Key);
-                _sqlCommand.Parameters.AddWithValue($"@cantidadKilos{i}", producto.Key);
+                _sqlCommand.Parameters.AddWithValue($"@cantidadKilos{i}", producto.Value.CantidadKilos);
+                _sqlCommand.Parameters.AddWithValue($"@precioKiloCorte{i}", producto.Value.PrecioKiloCorte);
 
             }
 

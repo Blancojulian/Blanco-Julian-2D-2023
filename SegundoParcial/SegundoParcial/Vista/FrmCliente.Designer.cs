@@ -47,8 +47,11 @@
             this.dtgvDatos = new System.Windows.Forms.DataGridView();
             this.lblTotal = new System.Windows.Forms.Label();
             this.lblMontoTotal = new System.Windows.Forms.Label();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.msiCerrarSesion = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.nudCantidad)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dtgvDatos)).BeginInit();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // lblSaludo
@@ -176,7 +179,7 @@
             // 
             this.lblNumeroFactura.AutoSize = true;
             this.lblNumeroFactura.Font = new System.Drawing.Font("Segoe UI", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblNumeroFactura.Location = new System.Drawing.Point(628, 21);
+            this.lblNumeroFactura.Location = new System.Drawing.Point(628, 24);
             this.lblNumeroFactura.Name = "lblNumeroFactura";
             this.lblNumeroFactura.Size = new System.Drawing.Size(186, 30);
             this.lblNumeroFactura.TabIndex = 12;
@@ -246,6 +249,23 @@
             this.lblMontoTotal.TabIndex = 18;
             this.lblMontoTotal.Text = "0";
             // 
+            // menuStrip1
+            // 
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.msiCerrarSesion});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(922, 24);
+            this.menuStrip1.TabIndex = 19;
+            this.menuStrip1.Text = "menuStrip1";
+            // 
+            // msiCerrarSesion
+            // 
+            this.msiCerrarSesion.Name = "msiCerrarSesion";
+            this.msiCerrarSesion.Size = new System.Drawing.Size(88, 20);
+            this.msiCerrarSesion.Text = "Cerrar Sesion";
+            this.msiCerrarSesion.Click += new System.EventHandler(this.msiCerrarSesion_Click);
+            // 
             // FrmCliente
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -270,12 +290,19 @@
             this.Controls.Add(this.lblMonto);
             this.Controls.Add(this.lblDinero);
             this.Controls.Add(this.lblSaludo);
+            this.Controls.Add(this.menuStrip1);
+            this.MainMenuStrip = this.menuStrip1;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "FrmCliente";
+            this.ShowIcon = false;
             this.Text = "FrmCliente";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmCliente_FormClosing);
             this.Load += new System.EventHandler(this.FrmCliente_Load);
             ((System.ComponentModel.ISupportInitialize)(this.nudCantidad)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dtgvDatos)).EndInit();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -302,5 +329,7 @@
         private DataGridView dtgvDatos;
         private Label lblTotal;
         private Label lblMontoTotal;
+        private MenuStrip menuStrip1;
+        private ToolStripMenuItem msiCerrarSesion;
     }
 }

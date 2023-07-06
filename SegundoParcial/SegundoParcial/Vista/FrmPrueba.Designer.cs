@@ -1,6 +1,6 @@
 ﻿namespace SegundoParcial.Vista
 {
-    partial class FrmPrincipal
+    partial class FrmPrueba
     {
         /// <summary>
         /// Required designer variable.
@@ -30,14 +30,14 @@
         {
             this.SuspendLayout();
             // 
-            // FrmPrincipal
+            // FrmPrueba
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.IsMdiContainer = true;
-            this.Name = "FrmPrincipal";
-            this.Text = "Carniceria";
+            this.Name = "FrmPrueba";
+            this.Text = "FrmPrueba";
+            this.Load += new System.EventHandler(this.FrmPrueba_Load);
             this.ResumeLayout(false);
 
         }

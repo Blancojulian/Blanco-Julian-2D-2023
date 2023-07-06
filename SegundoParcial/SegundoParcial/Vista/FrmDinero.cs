@@ -1,4 +1,5 @@
 ﻿using BibliotecaEntidades.Entidades;
+using BibliotecaEntidades.Excepciones;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,22 +13,17 @@ using System.Windows.Forms;
 
 namespace SegundoParcial.Vista
 {
-    public partial class FrmDinero : Form
+    public partial class FrmDinero : FrmBase
     {
         private Cliente _cliente;
-        private SoundPlayer _playerError;
-        private SoundPlayer _playerClick;
-        public FrmDinero(Cliente cliente)
+        public FrmDinero(Cliente cliente) : base()
         {
             InitializeComponent();
             this._cliente = cliente;
-            this._playerClick = new SoundPlayer(Properties.Resources.click);
-            this._playerError = new SoundPlayer(Properties.Resources.error);
         }
 
         private void FrmDinero_Load(object sender, EventArgs e)
         {
-            this.ConfiguarForm();
             this.lblBienvenida.Text = $"Bienvenido {this._cliente.MostrarNombreApellido()}";
             this.nudDinero.Value = (decimal)this._cliente.Dinero;
         }
@@ -38,23 +34,21 @@ namespace SegundoParcial.Vista
 
             try
             {
-                if (monto > 0)
-                {
-                    this._cliente.ActulizarDinero((double)monto);
-                    this.DialogResult = DialogResult.OK;
-                    this.Close();
-                }
-                else
-                {
-                    MessageBox.Show("Ingrese un monto mayor a cero");
-                    this._playerError.Play();
-
-                }
+                
+                this._cliente.ActulizarDinero((double)monto);
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+               
+            }
+            catch (DineroExcepcion ex)
+            {
+                this._playerError.Play();
+                MessageBox.Show(ex.Message);
             }
             catch (Exception ex)
             {
-
-                MessageBox.Show(ex.Message);
+                this._playerError.Play();
+                MostrarVentanaDeError(ex);
             }
             
         }
@@ -72,13 +66,19 @@ namespace SegundoParcial.Vista
             this.Close();
         }
 
-        private void ConfiguarForm()
+        protected override void ConfigurarForm()
         {
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.ControlBox = false;
             this.ShowIcon = false;
-            this.BackColor = Color.FromArgb(209, 157, 250);
         }
+
+        protected override void ConfigurarColorForm()
+        {
+            this.BackColor = Color.FromArgb(209, 157, 250);
+
+        }
+
     }
 }

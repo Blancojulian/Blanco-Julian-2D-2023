@@ -1,4 +1,5 @@
 ﻿using BibliotecaEntidades.Entidades;
+using BibliotecaEntidades.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace BibliotecaEntidades.DAO
 {
-    internal class CorteDAO : BaseDAO<Corte>
+    internal class CorteDAO : BaseDAO<Corte>, IConsultaSQL<Corte, Filtros>
     {
         public CorteDAO() : base()
         {
@@ -156,6 +157,86 @@ namespace BibliotecaEntidades.DAO
             return corte;
         }
 
+        public bool ExisteNombre(string nombre)
+        {
+            string nombreCorte = "";
+            bool retorno = false;
+
+            try
+            {
+                _sqlCommand.Parameters.Clear();
+                _sqlCommand.CommandText = "SELECT nombre FROM Corte WHERE nombre = @nombre";
+                _sqlCommand.Parameters.AddWithValue("@nombre", nombre);
+                _sqlConnection.Open();
+
+                using (SqlDataReader dataReader = _sqlCommand.ExecuteReader())
+                {
+                    if (dataReader.Read())
+                    {
+                        nombreCorte = Convert.ToString(dataReader["nombre"]);
+                        retorno = nombreCorte == string.Empty ? false : true;
+                    }
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (_sqlConnection.State == ConnectionState.Open)
+                {
+                    _sqlConnection.Close();
+                }
+            }
+            return retorno;
+        }
+        public List<Corte> BuscarCoincidencias(string cadena, Filtros filtro)
+        {
+            List<Corte> lista = new List<Corte>();
+            string comando = "SELECT * FROM Corte LEFT JOIN Categoria ON Corte.idCategoria = Categoria.id WHERE (Corte.nombre LIKE '%@cadena%' OR Corte.detalle LIKE '%@cadena%' OR Categoria.nombreCategoria LIKE '%@cadena%')";
+
+            if (filtro == Filtros.Disponible)
+            {
+                comando += " AND Corte.stockKilos > 0;";
+
+            }
+            else if (filtro == Filtros.No_Disponible)
+            {
+                comando += " AND Corte.stockKilos <= 0;";
+
+            }
+
+            try
+            {
+                _sqlCommand.Parameters.Clear();
+                _sqlCommand.CommandText = comando;
+                _sqlCommand.Parameters.AddWithValue("@cadena", cadena);
+                _sqlConnection.Open();
+
+                using (SqlDataReader dataReader = _sqlCommand.ExecuteReader())
+                {
+                    while (dataReader.Read())
+                    {
+                        lista.Add((Corte)dataReader);
+                    }
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (_sqlConnection.State == ConnectionState.Open)
+                {
+                    _sqlConnection.Close();
+                }
+            }
+            return lista;
+        }
 
         public override int Add(Corte datos)
         {

@@ -17,7 +17,7 @@ namespace BibliotecaEntidades.DAO
         {
             _sqlConnection = new SqlConnection(@"
                 Data Source = .;
-                Database = db_prueba_labo_2;
+                Database = db_labo_2;
                 Trusted_Connection = True;
             ");
             _sqlCommand = new SqlCommand();

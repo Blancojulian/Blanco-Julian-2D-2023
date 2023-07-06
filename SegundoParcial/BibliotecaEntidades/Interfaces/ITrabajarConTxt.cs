@@ -9,6 +9,5 @@ namespace BibliotecaEntidades.Interfaces
     public interface ITrabajarConTxt
     {
         public string EscribirTxt();
-        public string EscribirCamposTxt();
     }
 }

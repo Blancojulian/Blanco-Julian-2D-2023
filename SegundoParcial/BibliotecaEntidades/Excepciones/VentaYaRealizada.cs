@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BibliotecaEntidades.Excepciones
 {
-    internal class VentaYaRealizada : Exception
+    public class VentaYaRealizada : Exception
     {
         public VentaYaRealizada()
         {

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace BibliotecaEntidades.Entidades
 {
     public delegate void NoficarVenta(string mensaje);
-    public delegate void NotificarStockCorte(Corte corte, double stockRepuesto);
+    public delegate void NotificarStockCorte(InfoStockEventArgs info);
 
 
     //invocar al evento estatico de OnActualizarNombreProductos de la clase Factura
@@ -42,21 +42,26 @@ namespace BibliotecaEntidades.Entidades
         {
             double total = factura.Total;
             int filas = 0;
+            if (cliente is null)
+            {
+                throw new ErrorOperacionVentaExcepcion($"Debe seleccionar un cliente");
 
-            if (factura.Vendido)
+            }
+
+            if (factura.Estado == EstadoFactura.Orden)
             {
                 throw new VentaYaRealizada("Venta ya realizada");
             }
 
             if (!(cliente - total))
             {
-                throw new DineroInsufiente("El cliente no tiene dinero sufiente");
+                throw new DineroExcepcion("El cliente no tiene dinero sufiente");
             }
 
             HayStockCortes(factura);
 
             Cliente.GastarDinero(cliente, total);
-            factura.Vendido = true;
+            factura.Estado = EstadoFactura.Vendido;
             //ver si estoy modificando el dinero en update
             filas += ClaseDAO.UsuarioDAO.Update(cliente.Dni, cliente);
             filas += ClaseDAO.FacturaDAO.Update(factura.NumeroFactura, factura);
@@ -70,12 +75,12 @@ namespace BibliotecaEntidades.Entidades
         private static bool HayStockCortes(Factura factura)
         {
             bool retorno = true;
-            Dictionary<int, double> productos = factura.Productos;
+            Dictionary<int, FacturaItem> productos = factura.Productos;
             List<Corte> listaCortes;
 
             if (productos.Count <= 0)
             {
-                throw new ErrorAlRealizarVenta($"No se ingresaron productos al carrito");
+                throw new ErrorOperacionVentaExcepcion($"No se ingresaron productos al carrito");
 
             }
 
@@ -86,7 +91,7 @@ namespace BibliotecaEntidades.Entidades
                 if (!corte.Disponible)
                 {
                     retorno = false;
-                    throw new ErrorAlRealizarVenta($"No hay stock de {corte.Nombre} ID:{corte.Id}");
+                    throw new ErrorOperacionVentaExcepcion($"No hay stock de {corte.Nombre} ID:{corte.Id}");
                 }
             }
 
@@ -104,7 +109,7 @@ namespace BibliotecaEntidades.Entidades
                     corte.StockKilos += stock;
                     ClaseDAO.CorteDAO.Update(corte.Id, corte);
                     Thread.Sleep(3000);
-                    OnReponerStock?.Invoke(corte, stock);
+                    OnReponerStock?.Invoke(new InfoStockEventArgs(corte.Nombre, stock));
                 });
             }
 
@@ -125,10 +130,11 @@ namespace BibliotecaEntidades.Entidades
             return ClaseDAO.CorteDAO.Delete(idCorte);
         }
 
-        public Corte? GetDetalleCorte(int idCorte)
+        public bool ExisteNombreCorte(string nombreCorte)
         {
-            return ClaseDAO.CorteDAO.Get(idCorte);
+            return ClaseDAO.CorteDAO.ExisteNombre(nombreCorte);
         }
+
         public Cliente? GetUsuario(string mail)
         {
             return (Cliente?)ClaseDAO.UsuarioDAO.Get(mail);
@@ -137,50 +143,51 @@ namespace BibliotecaEntidades.Entidades
         {
             return ClaseDAO.UsuarioDAO.GetAll<Cliente>();
         }
+        public Corte? GetCorte(int idCorte)
+        {
+            return ClaseDAO.CorteDAO.Get(idCorte);
+        }
+        public Cliente? GetCliente(int dniCliente)
+        {
+            return (Cliente?)ClaseDAO.UsuarioDAO.Get(dniCliente);
+        }
         public List<Factura> GetFacturas(EstadoVenta estado)
         {
             return ClaseDAO.FacturaDAO.GetAll(estado);
         }
-        public List<Corte> GetProductos(bool disponible)
+        public List<Factura> GetFacturas(string cadena, EstadoVenta estado)
         {
-            return ClaseDAO.CorteDAO.GetAll(disponible);
+            return ClaseDAO.FacturaDAO.BuscarCoincidencias(cadena, estado);
+        }
+        public List<Corte> GetProductos(Filtros filtro)
+        {
+            List<Corte> lista;
+
+            switch (filtro)
+            {
+                case Filtros.Disponible:
+                    lista = ClaseDAO.CorteDAO.GetAll(true);
+                    break;
+                case Filtros.No_Disponible:
+                    lista = ClaseDAO.CorteDAO.GetAll(false);
+                    break;
+                case Filtros.Todos:
+                    lista = ClaseDAO.CorteDAO.GetAll();
+                    break;
+                default:
+                    throw new Exception("Error, debe seleccionar un filtro valido");
+                    break;
+            }
+            return lista;
+        }
+        public List<Corte> GetProductos(string cadena, Filtros filtro)
+        {
+            return ClaseDAO.CorteDAO.BuscarCoincidencias(cadena, filtro);
         }
         public override List<Corte> GetProductos()
         {
             return ClaseDAO.CorteDAO.GetAll();
         }
-        public int AgregarCliente(Cliente cliente)
-        {
-            return ClaseDAO.UsuarioDAO.Add(cliente);
-        }
-
-        //hacer una interfaz generica para GenerarTablaDeInfomacion
-        /*
-        public override DataTable GenerarTablaDeInfomacion()
-        {
-            List<Cliente> clientes = Carniceria.Clientes;
-            DataTable dt = new DataTable();
-
-            dt.Columns.Add("Nombre");
-            dt.Columns.Add("Dinero");
-            dt.Columns.Add("DNI");
-            dt.Columns.Add("Mail");
-
-            foreach (Cliente c in clientes)
-            {
-                dt.Rows.Add(c.MostrarNombreApellido(), c.Dinero, c.Dni, c.Mail);
-            }
-
-            return dt;
-        }
-
-        
-
-        public DataTable GenerarTablaDeInfomacion(Filtros filtro)
-        {
-            return Carniceria.Heladera.GenerarTablaDeProductos(filtro);
-        }
-        */
 
         public override string MostrarNombreApellido()
         {

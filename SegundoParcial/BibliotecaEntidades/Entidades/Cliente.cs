@@ -1,4 +1,5 @@
 ﻿using BibliotecaEntidades.DAO;
+using BibliotecaEntidades.Excepciones;
 using BibliotecaEntidades.Serializacion;
 using System;
 using System.Collections.Generic;
@@ -46,6 +47,11 @@ namespace BibliotecaEntidades.Entidades
         }*/
         public void ActulizarDinero(double monto)
         {
+            if(monto <= 0d)
+            {
+                throw new DineroExcepcion("Debe ingresar un monto mayor a cero");
+            }
+
             this.Dinero = monto;
             ClaseDAO.UsuarioDAO.Update(this.Dni, this);
         }
@@ -68,6 +74,8 @@ namespace BibliotecaEntidades.Entidades
             if (retorno)
             {
                 factura.NombreCliente = this.MostrarNombreApellido();
+                factura.DniCliente = this.Dni;
+                factura.Estado = EstadoFactura.Pendiente;
                 ClaseDAO.FacturaDAO.Add(factura);
             }
 
@@ -93,27 +101,15 @@ namespace BibliotecaEntidades.Entidades
         {
             Cliente c;
             
-            if (r["monto"] is null)
-            {
-                c = new Cliente(
-                r["nombre"].ToString() ?? "",
-                r["apellido"].ToString() ?? "",
+            double monto = r["monto"] is DBNull ? 0d : double.Parse(Convert.ToString(r["monto"]));
+            c = new Cliente(
+                r["nombre"]?.ToString() ?? "",
+                r["apellido"]?.ToString() ?? "",
                 Convert.ToInt32(r["dni"]),
-                r["mail"].ToString() ?? "",
-                r["contrasenia"].ToString() ?? ""
+                r["mail"]?.ToString() ?? "",
+                r["contrasenia"]?.ToString() ?? "",
+                monto
                 );
-            }
-            else
-            {
-                c = new Cliente(
-                r["nombre"].ToString() ?? "",
-                r["apellido"].ToString() ?? "",
-                Convert.ToInt32(r["dni"]),
-                r["mail"].ToString() ?? "",
-                r["contrasenia"].ToString() ?? "",
-                Convert.ToDouble(r["monto"])
-                );
-            }
 
             return c;
         }
