@@ -17,6 +17,7 @@ namespace SegundoParcial.Vista
     {
         private Vendedor _vendedor;
         private SaveFileDialog _saveFileDialog;
+        private OpenFileDialog _openFileDialog;
         private string _ultimoArchivo;
 
 
@@ -26,6 +27,8 @@ namespace SegundoParcial.Vista
             this._vendedor = vendedor;
             this._saveFileDialog = new SaveFileDialog();
             this._saveFileDialog.Filter = "Archivo de texto|*.txt";
+            this._openFileDialog = new OpenFileDialog();
+            this._openFileDialog.Filter = "Archivo de texto|*.txt";
         }
         private string UltimoArchivo
         {
@@ -66,13 +69,15 @@ namespace SegundoParcial.Vista
         {// ver que propiedades cambiaron en la clase Factura
             //this.dtgvHistorial.DataSource = this._vendedor.GetFacturas((EstadoVenta)this.cbxEstadoVenta.SelectedItem);
             this.dtgvHistorial.DataSource = listaFacturas;
-            this.dtgvHistorial.Columns["Vendido"].Visible = false;
             this.dtgvHistorial.Columns["Credito"].Visible = false;
             this.dtgvHistorial.Columns["Productos"].Visible = false;
+            this.dtgvHistorial.Columns["NumeroFactura"].HeaderText = "Numero Factura";
+            this.dtgvHistorial.Columns["DniCliente"].HeaderText = "DNI Cliente";
+            this.dtgvHistorial.Columns["NombreCliente"].HeaderText = "Nombre Cliente";
             this.dtgvHistorial.Columns["CreditoDebito"].HeaderText = "Credito/Debito";
-            this.dtgvHistorial.Columns["DetalleProductos"].HeaderText = "Detalle productos";
-            this.dtgvHistorial.Columns["VentaRealizada"].HeaderText = "Estado";
-            this.dtgvHistorial.Columns["DetalleProductos"].DisplayIndex = 0;
+            this.dtgvHistorial.Columns["DetalleProductos"].HeaderText = "Detalle Productos";
+            //this.dtgvHistorial.Columns["VentaRealizada"].HeaderText = "Estado";
+            this.dtgvHistorial.Columns["DetalleProductos"].DisplayIndex = 1;
 
             this.dtgvHistorial.ClearSelection();
         }
@@ -112,6 +117,7 @@ namespace SegundoParcial.Vista
             }
             catch (Exception ex)
             {
+                this.PlayError();
                 MostrarVentanaDeError(ex);
             }
         }
@@ -120,7 +126,7 @@ namespace SegundoParcial.Vista
         {
             List<Factura> listaCortes = new List<Factura>();
 
-            foreach (DataGridViewRow row in this.dtgvHistorial.Columns)
+            foreach (DataGridViewRow row in this.dtgvHistorial.Rows)
             {
                 if (Convert.ToBoolean(row.Cells["Seleccionar"].Value))
                 {
@@ -150,11 +156,12 @@ namespace SegundoParcial.Vista
 
                 if (Path.GetExtension(UltimoArchivo) == ".txt")
                 {
-                    this._vendedor.SerializadorFacturasTxt.Guardar(UltimoArchivo, listaFacturas);
+                    this._vendedor.SerializadorFacturasTxt.GuardarComo(UltimoArchivo, listaFacturas);
                 }
             }
             catch (Exception ex)
             {
+                this.PlayError();
                 MostrarVentanaDeError(ex);
             }
         }
@@ -171,6 +178,7 @@ namespace SegundoParcial.Vista
             }
             catch (Exception ex)
             {
+                this.PlayError();
                 MostrarVentanaDeError(ex);
             }
         }
@@ -178,28 +186,32 @@ namespace SegundoParcial.Vista
         private void cbxEstadoVenta_SelectedValueChanged(object sender, EventArgs e)
         {
             this.CargarHistorial( this._vendedor.GetFacturas((EstadoVenta)this.cbxEstadoVenta.SelectedItem) );
+            this.tbxBuscar.Text = string.Empty;
             this.lblTextoBuscado.Text = string.Empty;
             
         }
 
         private void btnFiltrar_Click(object sender, EventArgs e)
         {
+            this.PlayClick();
             this.BuscarFiltro();
         }
 
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             this.lblTextoBuscado.Text = string.Empty;
             this.CargarHistorial(this._vendedor.GetFacturas((EstadoVenta)this.cbxEstadoVenta.SelectedItem));
         }
 
         private void dtgvHistorial_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
+            this.PlayClick();
+
             DataGridView senderGrid = (DataGridView)sender;
             if (senderGrid.Columns[e.ColumnIndex] is DataGridViewCheckBoxColumn && e.RowIndex >= 0)
             {
-                this._playerClick.Play();
+                this.PlayClick();
                 bool check = Convert.ToBoolean(senderGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
                 senderGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = !check;
 
@@ -208,7 +220,7 @@ namespace SegundoParcial.Vista
 
         private void btnGuardar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             if (!File.Exists(UltimoArchivo))
             {
                 GuardarComo();
@@ -221,20 +233,59 @@ namespace SegundoParcial.Vista
 
         private void btnGuardarComo_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             GuardarComo();
         }
 
         private void btnSeleccionarTodas_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             this.SetColumnaSeleccionar(true);
         }
 
         private void btnDeseleccionarTodas_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             this.SetColumnaSeleccionar(false);
+        }
+
+        private void btnAbrir_Click(object sender, EventArgs e)
+        {
+            this.PlayClick();
+
+            List<Factura> listaFacturas;
+            FrmMostrar<Factura> frmMostrar;
+            if (_openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                UltimoArchivo = _openFileDialog.FileName;
+
+                try
+                {
+                    
+                    if (!(Path.GetExtension(UltimoArchivo) == ".txt"))
+                    {
+                        throw new ArchivoIncorrectoExcepcion("Error, Extension desconocida");
+
+                    }
+                    listaFacturas = this._vendedor.SerializadorFacturasTxt.LeerFacturaTXT(UltimoArchivo);
+                    frmMostrar = new FrmMostrar<Factura>(listaFacturas, "Facturas");
+                    frmMostrar.ShowDialog();
+
+                    
+                }
+                catch (Exception ex)
+                {
+                    this.PlayError();
+                    MostrarVentanaDeError(ex);
+                }
+            }
+        }
+
+        private void btnSalir_Click(object sender, EventArgs e)
+        {
+            this.PlayClick();
+            this.DialogResult = DialogResult.None;
+            this.Close();
         }
     }
 }

@@ -157,6 +157,39 @@ namespace BibliotecaEntidades.DAO
             return corte;
         }
 
+        public bool CorteTieneComprasAsociadas(int id)
+        {
+            bool retorno = false;
+
+            try
+            {//no se si tendria que estar en FacturaDAO
+                _sqlCommand.Parameters.Clear();
+                _sqlCommand.CommandText = "SELECT TOP 1 * FROM FacturaItem WHERE idCorte = @id;";
+                _sqlCommand.Parameters.AddWithValue("@id", id);
+                _sqlConnection.Open();
+
+                using (SqlDataReader dataReader = _sqlCommand.ExecuteReader())
+                {
+                    if (dataReader.Read())
+                    {
+                        retorno = true;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (_sqlConnection.State == ConnectionState.Open)
+                {
+                    _sqlConnection.Close();
+                }
+            }
+            return retorno;
+        }
+
         public bool ExisteNombre(string nombre)
         {
             string nombreCorte = "";
@@ -195,7 +228,7 @@ namespace BibliotecaEntidades.DAO
         public List<Corte> BuscarCoincidencias(string cadena, Filtros filtro)
         {
             List<Corte> lista = new List<Corte>();
-            string comando = "SELECT * FROM Corte LEFT JOIN Categoria ON Corte.idCategoria = Categoria.id WHERE (Corte.nombre LIKE '%@cadena%' OR Corte.detalle LIKE '%@cadena%' OR Categoria.nombreCategoria LIKE '%@cadena%')";
+            string comando = "SELECT * FROM Corte LEFT JOIN Categoria ON Corte.idCategoria = Categoria.id WHERE (Corte.nombre LIKE @cadena OR Corte.detalle LIKE @cadena OR Categoria.nombreCategoria LIKE @cadena)";
 
             if (filtro == Filtros.Disponible)
             {
@@ -212,7 +245,7 @@ namespace BibliotecaEntidades.DAO
             {
                 _sqlCommand.Parameters.Clear();
                 _sqlCommand.CommandText = comando;
-                _sqlCommand.Parameters.AddWithValue("@cadena", cadena);
+                _sqlCommand.Parameters.AddWithValue("@cadena", $"%{cadena}%");
                 _sqlConnection.Open();
 
                 using (SqlDataReader dataReader = _sqlCommand.ExecuteReader())
@@ -279,7 +312,8 @@ namespace BibliotecaEntidades.DAO
             {
                 _sqlCommand.Parameters.Clear();
                 _sqlConnection.Open();
-                _sqlCommand.CommandText = "UPDATE Corte SET nombre = @nombre, stockKilos = @stockKilos, precioKilo = @precioKilo, idCategoria = @idCategoria, @detalle = detalle WHERE id = @id";
+                _sqlCommand.CommandText = "UPDATE Corte SET nombre = @nombre, stockKilos = @stockKilos, " +
+                    "precioKilo = @precioKilo, idCategoria = @idCategoria, @detalle = detalle WHERE id = @id";
 
                 _sqlCommand.Parameters.AddWithValue("@nombre", datos.Nombre);
                 _sqlCommand.Parameters.AddWithValue("@stockKilos", datos.StockKilos);
@@ -287,7 +321,9 @@ namespace BibliotecaEntidades.DAO
                 _sqlCommand.Parameters.AddWithValue("@idCategoria", (int)datos.Categoria);
                 _sqlCommand.Parameters.AddWithValue("@detalle", datos.Detalle);
                 _sqlCommand.Parameters.AddWithValue("@id", id);
-
+                //deserilizar
+                //error reponer
+                //
                 filas = _sqlCommand.ExecuteNonQuery();
             }
             catch (Exception)
@@ -304,7 +340,7 @@ namespace BibliotecaEntidades.DAO
 
             return filas;
         }
-        public override int Delete(int dni)
+        public override int Delete(int id)
         {
             int filas = 0;
 
@@ -312,9 +348,9 @@ namespace BibliotecaEntidades.DAO
             {
                 _sqlCommand.Parameters.Clear();
                 _sqlConnection.Open();
-                _sqlCommand.CommandText = "DELETE FROM Corte WHERE dni = @dni";
+                _sqlCommand.CommandText = "DELETE FROM Corte WHERE id = @id";
 
-                _sqlCommand.Parameters.AddWithValue("@dni", dni);
+                _sqlCommand.Parameters.AddWithValue("@id", id);
 
                 filas = _sqlCommand.ExecuteNonQuery();
             }

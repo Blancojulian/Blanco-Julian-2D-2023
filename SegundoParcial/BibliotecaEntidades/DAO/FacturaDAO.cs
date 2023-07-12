@@ -92,9 +92,9 @@ namespace BibliotecaEntidades.DAO
         {
             List<Factura> lista = new List<Factura>();
             string comando = "SELECT *, CONCAT(Usuario.nombre,' ',Usuario.apellido) AS nombreCompleto FROM Factura " +
-                "LEFT JOIN Usuario ON Factura.dniCliente = Usuario.dni (Factura.numeroFactura LIKE '%@cadena%' OR " +
-                "Factura.dniCliente LIKE '%@cadena%' OR Usuario.nombre LIKE '%@cadena%' OR Usuario.apellido LIKE " +
-                "'%@cadena%' OR nombreCompleto LIKE '%@cadena%')";
+                "LEFT JOIN Usuario ON Factura.dniCliente = Usuario.dni (Factura.numeroFactura LIKE @cadena OR " +
+                "Factura.dniCliente LIKE @cadena OR Usuario.nombre LIKE @cadena OR Usuario.apellido LIKE " +
+                "@cadena OR nombreCompleto LIKE @cadena)";
 
             if (filtro == EstadoVenta.Pendiente)
             {
@@ -111,7 +111,7 @@ namespace BibliotecaEntidades.DAO
             {
                 _sqlCommand.Parameters.Clear();
                 _sqlCommand.CommandText = comando;
-                _sqlCommand.Parameters.AddWithValue("@cadena", cadena);
+                _sqlCommand.Parameters.AddWithValue("@cadena", $"%{cadena}%");
                 _sqlConnection.Open();
 
                 using (SqlDataReader dataReader = _sqlCommand.ExecuteReader())
@@ -183,7 +183,7 @@ namespace BibliotecaEntidades.DAO
         public override int Add(Factura datos)
         {
             int filas = 0;
-            string comando = "INSERT INTO Factura VALUES(@numeroFactura, @dniCliente, @idEstadoFactura, @pagoConCredito);";
+            string comando = "INSERT INTO Factura(numeroFactura, dniCliente, idEstadoFactura, pagoConCredito) VALUES(@numeroFactura, @dniCliente, @idEstadoFactura, @pagoConCredito);";
 
             try
             {
@@ -260,8 +260,8 @@ namespace BibliotecaEntidades.DAO
             {
                 _sqlCommand.Parameters.Clear();
                 _sqlConnection.Open();
-                _sqlCommand.CommandText = "DELETE FROM Factura WHERE numeroFactura = @numeroFactura;" +
-                    "DELETE FROM FacturaItem WHERE numeroFactura = @numeroFactura;";
+                _sqlCommand.CommandText = "DELETE FROM FacturaItem WHERE numeroFactura = @numeroFactura;" + 
+                    "DELETE FROM Factura WHERE numeroFactura = @numeroFactura;";
 
                 _sqlCommand.Parameters.AddWithValue("@numeroFactura", numeroFactura);
 
@@ -281,29 +281,23 @@ namespace BibliotecaEntidades.DAO
 
             return filas;
         }
-        //hacer sync
         private void GetItemsParaFacturas(List<Factura> lista)
         {
             foreach (Factura factura in lista)
-            {/*
-                Task.Run(() =>
-                {
-                    GetItems(factura);
-                });*/
+            {
                 GetItems(factura);
-
             }
         }
 
         private void GetItems(Factura factura)
         {
-
+            
             try
             {
                 if (factura is not null)
                 {
                     _sqlCommand.Parameters.Clear();
-                    _sqlCommand.CommandText = "SELECT * FROM FacturaItem WHERE numeroFactura = @numeroFactura";
+                    _sqlCommand.CommandText = "SELECT * FROM FacturaItem LEFT JOIN Corte ON FacturaItem.idCorte = Corte.id WHERE FacturaItem.numeroFactura = @numeroFactura";
                     _sqlCommand.Parameters.AddWithValue("@numeroFactura", factura.NumeroFactura);
                     _sqlConnection.Open();
 
@@ -366,7 +360,7 @@ namespace BibliotecaEntidades.DAO
         
         private string ComandoGetAllPorEstadoVenta(EstadoVenta estadoVenta)
         {
-            string comando = "SELECT *, CONCAT(Usuario.nombre,' ',Usuario.apellido) FROM Factura LEFT JOIN Usuario ON Factura.dniCliente = Usuario.dni";
+            string comando = "SELECT *, CONCAT(Usuario.nombre,' ',Usuario.apellido) AS nombreCompleto FROM Factura LEFT JOIN Usuario ON Factura.dniCliente = Usuario.dni";
 
             if (estadoVenta == EstadoVenta.Pendiente)
             {
@@ -389,7 +383,7 @@ namespace BibliotecaEntidades.DAO
             foreach (KeyValuePair<int, FacturaItem> producto in listaProductos)
             {
                 i++;
-                sb.AppendLine($"INSERT INTO Corte VALUES(@numeroFactura, @idCorte{i}, @cantidadKilos{i}, @precioKiloCorte{i});");
+                sb.AppendLine($"INSERT INTO FacturaItem VALUES(@numeroFactura, @idCorte{i}, @cantidadKilos{i}, @precioKiloCorte{i});");
 
                 _sqlCommand.Parameters.AddWithValue($"@idCorte{i}", producto.Key);
                 _sqlCommand.Parameters.AddWithValue($"@cantidadKilos{i}", producto.Value.CantidadKilos);

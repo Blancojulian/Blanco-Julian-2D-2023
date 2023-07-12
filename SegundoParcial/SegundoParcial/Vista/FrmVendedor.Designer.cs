@@ -44,7 +44,6 @@
             this.dtgvDatos.RowTemplate.Height = 25;
             this.dtgvDatos.Size = new System.Drawing.Size(776, 251);
             this.dtgvDatos.TabIndex = 0;
-            this.dtgvDatos.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dtgvDatos_CellContentClick);
             // 
             // lblVendedor
             // 

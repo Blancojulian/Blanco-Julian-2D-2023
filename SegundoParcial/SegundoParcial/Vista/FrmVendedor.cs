@@ -14,7 +14,7 @@ using System.Windows.Forms;
 namespace SegundoParcial.Vista
 {
     public partial class FrmVendedor : FrmBase
-    {//hay que volver hacer el form que muestre todas las facturas y tenga un checkbox para elegir cuales pasar a texto
+    {
         private Vendedor _vendedor;
 
         public FrmVendedor(Vendedor vendedor) : base()
@@ -34,21 +34,21 @@ namespace SegundoParcial.Vista
 
         }
         
-        private void NotificarVentaRealizada(string mensaje)
+        private void NotificarVentaRealizada(InfoVentaEventArgs e)
         {
-            MessageBox.Show(mensaje);
+            MessageBox.Show($"Venta realizada al cliente {e.NombreCliente} comprobante {e.NumeroFactura} Total {e.Total}");
         }
 
         private Factura GetFactura()
         {
             if (this.dtgvDatos.CurrentRow is null && this.dtgvDatos.SelectedRows.Count < 1)
             {
-                throw new ErrorOperacionVentaExcepcion("Debe selecionar una factura");
+                throw new ErrorOperacionVendedorExcepcion("Debe selecionar una factura");
             }
 
             if (this.dtgvDatos.SelectedRows.Count > 1)
             {
-                throw new ErrorOperacionVentaExcepcion("Debe selecionar una sola factura");
+                throw new ErrorOperacionVendedorExcepcion("Debe selecionar una sola factura");
             }
 
             return (Factura)this.dtgvDatos.CurrentRow.DataBoundItem;
@@ -60,6 +60,15 @@ namespace SegundoParcial.Vista
             this.dtgvDatos.DataSource = this._vendedor.GetFacturas(EstadoVenta.Pendiente);
             this.dtgvDatos.ClearSelection();
 
+            this.dtgvDatos.Columns["Credito"].Visible = false;
+            this.dtgvDatos.Columns["Productos"].Visible = false;
+            this.dtgvDatos.Columns["NumeroFactura"].HeaderText = "Numero Factura";
+            this.dtgvDatos.Columns["DniCliente"].HeaderText = "DNI Cliente";
+            this.dtgvDatos.Columns["NombreCliente"].HeaderText = "Nombre Cliente";
+            this.dtgvDatos.Columns["CreditoDebito"].HeaderText = "Credito/Debito";
+            this.dtgvDatos.Columns["DetalleProductos"].HeaderText = "Detalle Productos";
+            //this.dtgvHistorial.Columns["VentaRealizada"].HeaderText = "Estado";
+            this.dtgvDatos.Columns["DetalleProductos"].DisplayIndex = 1;
 
         }
 
@@ -89,50 +98,12 @@ namespace SegundoParcial.Vista
         {
             this.BackColor = Color.FromArgb(222, 122, 34);
         }
-        //eliminar no se va usar
-        private void dtgvDatos_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            DataGridView senderGrid = (DataGridView)sender;
-            if (senderGrid.Columns[e.ColumnIndex] is DataGridViewButtonColumn &&
-        e.RowIndex >= 0)
-            {
-                this._playerClick.Play();
-
-                string mail = senderGrid.Rows[e.RowIndex].Cells["Mail"].Value.ToString() ?? "nulo";
-                Cliente? cliente = this._vendedor.GetUsuario(mail);
-
-                if (cliente is not null)
-                {/*cambiar
-                    FrmListadoCompras frmCompras = new FrmListadoCompras(this._vendedor, cliente);
-                    frmCompras.ShowDialog();
-                    this.CargarTablaDeClientes();*/
-                }
-
-            }
-        }
-
-        //ver bien este metodo se saco del form FrmListadoCompras
-        private void CargarTablaDeCompras()
-        {
-            this.dtgvDatos.DataSource = this._vendedor.GetFacturas(EstadoVenta.Todas);
-            this.dtgvDatos.Columns["Vendido"].Visible = false;
-            this.dtgvDatos.Columns["Credito"].Visible = false;
-            this.dtgvDatos.Columns["Productos"].Visible = false;
-            this.dtgvDatos.Columns["NombreCliente"].Visible = false;
-            this.dtgvDatos.Columns["CreditoDebito"].HeaderText = "Credito/Debito";
-            this.dtgvDatos.Columns["DetalleProductos"].HeaderText = "Detalle productos";
-            this.dtgvDatos.Columns["VentaRealizada"].HeaderText = "Estado";
-            this.dtgvDatos.Columns["DetalleProductos"].DisplayIndex = 0;
-
-            this.dtgvDatos.ClearSelection();
-
-        }
-
+        
         private void btnRealizarVenta_Click(object sender, EventArgs e)
         {
             try
             {
-                this._playerClick.Play();
+                this.PlayClick();
                 Factura factura = GetFactura();
                 Cliente? cliente = this._vendedor.GetCliente(factura.DniCliente);
                 if (this._vendedor.RealizarVenta(cliente, factura))
@@ -140,31 +111,31 @@ namespace SegundoParcial.Vista
                     CargarTablaDeFacturas();
                 }
             }
-            catch (ErrorOperacionVentaExcepcion ex)
+            catch (ErrorOperacionVendedorExcepcion ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show(ex.Message);
             }
             catch (DineroExcepcion ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show(ex.Message);
             }
             catch (VentaYaRealizada ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show(ex.Message);
             }
             catch (Exception ex)
             {
-                this._playerError.Play();
-                MessageBox.Show(ex.Message);
+                this.PlayError();
+                MostrarVentanaDeError(ex);
             }
         }
 
         private void btnSalir_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
 
             this.DialogResult = DialogResult.None;
             this.Close();

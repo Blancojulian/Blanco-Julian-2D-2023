@@ -53,12 +53,17 @@ namespace SegundoParcial.Vista
             this.ConfigurarDataGrid();
             this.CargarTablaDeProductos(this._vendedor.GetProductos((Filtros)this.cbxFiltro.SelectedItem));
             this.lblVendedor.Text = this._vendedor.MostrarNombreApellido();
-            this.dtgvDatos.ClearSelection();
-            this.SetOpcionesSerializacion(false);
             this.dtgvDatos.Columns["Seleccionar"].Visible = false;
-            this.dtgvDatos.Columns["Disponible"].Visible = false;
 
-            this._vendedor.OnReponerStock += NotificarReponerStock;
+            this.dtgvDatos.Columns["Disponible"].Visible = false;
+            this.dtgvDatos.Columns["StockKilos"].HeaderText = "Stock";
+            this.dtgvDatos.Columns["PrecioKilo"].HeaderText = "Precio x Kilo";
+            this.SetOpcionesSerializacion(false);
+
+            this.dtgvDatos.ClearSelection();
+
+            this._vendedor.OnErrorEnHiloSecundario += this.MostrarVentanaDeError;
+            this._vendedor.OnReponerStock += this.NotificarReponerStock;
 
         }
 
@@ -66,8 +71,6 @@ namespace SegundoParcial.Vista
         {
             try
             {
-                //this._listaCortes = this._vendedor.GetProductos((Filtros)this.cbxFiltro.SelectedItem);
-                //this._listaCortes = listaCortes;
                 this.dtgvDatos.DataSource = listaCortes;
                 this.dtgvDatos.Update();
                 this.dtgvDatos.Refresh();
@@ -86,7 +89,7 @@ namespace SegundoParcial.Vista
 
         private void SetLastIndex()
         {
-            this._lastIndex = this.dtgvDatos.CurrentRow.Index;
+            this._lastIndex = this.dtgvDatos.CurrentRow is not null ? this.dtgvDatos.CurrentRow.Index : 0;
         }
 
 
@@ -167,6 +170,7 @@ namespace SegundoParcial.Vista
             string searchValue = this.tbxFiltrar.Text;
             searchValue = searchValue.ToLower().Trim();
             this.lblFiltroBuscado.Text = searchValue;
+            //MessageBox.Show(searchValue);
             try
             {
                 this.CargarTablaDeProductos(this._vendedor.GetProductos(searchValue, (Filtros)this.cbxFiltro.SelectedItem));
@@ -174,6 +178,7 @@ namespace SegundoParcial.Vista
             }
             catch (Exception ex)
             {
+                this.PlayError();
                 MostrarVentanaDeError(ex);
             }
         }
@@ -219,6 +224,7 @@ namespace SegundoParcial.Vista
         {
             this.CargarTablaDeProductos(this._vendedor.GetProductos((Filtros)this.cbxFiltro.SelectedItem));
             this.lblFiltroBuscado.Text = string.Empty;
+            this.tbxFiltrar.Text = string.Empty;
             this.dtgvDatos.ClearSelection();
         }
 
@@ -227,31 +233,57 @@ namespace SegundoParcial.Vista
             this.BuscarProducto();
         }
 
-        private void btnReponer_Click(object sender, EventArgs e)
+        private async void btnReponer_Click(object sender, EventArgs e)
         {
 
             double stock = (double)this.nudCantidad.Value;
+            bool check = false;
             Corte corte;
-
+            
             try
             {
-                this._playerClick.Play();
+                this.PlayClick();
                 corte = GetProducto();
-                this._vendedor.ReponerStock(corte, stock);
+                await this._vendedor.ReponerStock(corte, stock);
                 this.SetLastIndex();
                 //this.CargarTablaDeProductos();
-                this.CargarTablaDeProductos(this._vendedor.GetProductos((Filtros)this.cbxFiltro.SelectedItem));
+                //this.CargarTablaDeProductos(this._vendedor.GetProductos((Filtros)this.cbxFiltro.SelectedItem));
 
             }
             catch (Exception ex)
             {
+                this.PlayError();
                 MessageBox.Show(ex.Message);
             }
         }
+        private async void Prueba()
+        {
+            Task.Run(() =>
+            {
+                throw new Exception("Error en prueba");
+                MessageBox.Show("Prueba");
 
+            });
+            /*
+            try
+            {
+                await Task.Run(() =>
+                {
+                    throw new Exception("Error en prueba");
+                    MessageBox.Show("Prueba");
+
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }*/
+        }
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            //Prueba();
+
+            this.PlayClick();
 
             this.tbxBuscar.Text = string.Empty;
             this.dtgvDatos.ClearSelection();
@@ -260,7 +292,7 @@ namespace SegundoParcial.Vista
 
         private void btnAgregar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
 
             FrmCorteAgregar frm = new FrmCorteAgregar();
             frm.ShowDialog();
@@ -279,7 +311,7 @@ namespace SegundoParcial.Vista
             }
             else
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show("Fallo al agregar el producto");
             }
         }
@@ -291,7 +323,7 @@ namespace SegundoParcial.Vista
 
             try
             {
-                this._playerClick.Play();
+                this.PlayClick();
                 corte = GetProducto();
                 //MessageBox.Show($"{corte.Nombre}");
                 FrmCorteModificar frm = new FrmCorteModificar(corte, this._vendedor.ExisteNombreCorte);
@@ -312,13 +344,13 @@ namespace SegundoParcial.Vista
                 }
                 else
                 {
-                    this._playerError.Play();
+                    this.PlayError();
                     MessageBox.Show("Fallo al agregar el producto");
                 }
             }
             catch (Exception ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show(ex.Message);
             }
         }
@@ -338,7 +370,8 @@ namespace SegundoParcial.Vista
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                this.PlayError();
+                MostrarVentanaDeError(ex);
             }
         }
 
@@ -346,7 +379,24 @@ namespace SegundoParcial.Vista
 
         private void NotificarReponerStock(InfoStockEventArgs infoStock)
         {
-            MessageBox.Show($"Ingresaro {infoStock.StockRepuesto} kilos de {infoStock.NombreCorte}");
+            
+            if (this.cbxFiltro.InvokeRequired)//ver si funciona
+            {
+                object[] parametros = new object[] { infoStock };
+                this.Invoke(this.NotificarReponerStock, parametros);
+            }
+            else
+            {
+                try
+                {
+                    this.CargarTablaDeProductos(this._vendedor.GetProductos((Filtros)this.cbxFiltro.SelectedItem));
+                    MessageBox.Show($"Ingresaro {infoStock.StockRepuesto} kilos de {infoStock.NombreCorte}");
+                }
+                catch (Exception ex)
+                {
+                    MostrarVentanaDeError(ex);
+                }
+            }
 
         }
 
@@ -355,7 +405,7 @@ namespace SegundoParcial.Vista
             DataGridView senderGrid = (DataGridView)sender;
             if (senderGrid.Columns[e.ColumnIndex] is DataGridViewCheckBoxColumn && e.RowIndex >= 0)
             {
-                this._playerClick.Play();
+                this.PlayClick();
                 bool check = Convert.ToBoolean(senderGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
                 senderGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = !check;
 
@@ -365,6 +415,7 @@ namespace SegundoParcial.Vista
         private void msiAbrir_Click(object sender, EventArgs e)
         {
             List<Corte> listaCortes;
+            FrmMostrar<Corte> frmMostrar;
             if (_openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 UltimoArchivo = _openFileDialog.FileName;
@@ -379,10 +430,16 @@ namespace SegundoParcial.Vista
                         case ".xml":
                             listaCortes = this._vendedor.SerializadorProductosXml.Leer(UltimoArchivo);
                             break;
+                        default:
+                            throw new ArchivoIncorrectoExcepcion("Error, Extension desconocida");
                     }
+
+                    frmMostrar = new FrmMostrar<Corte>(listaCortes, "Cortes");
+                    frmMostrar.ShowDialog();
                 }
                 catch (Exception ex)
                 {
+                    this.PlayError();
                     MostrarVentanaDeError(ex);
                 }
             }
@@ -392,7 +449,7 @@ namespace SegundoParcial.Vista
             List<Corte> listaCortes = new List<Corte>();
 
 
-            foreach(DataGridViewRow row in this.dtgvDatos.Columns)
+            foreach(DataGridViewRow row in this.dtgvDatos.Rows)
             {
                 if (Convert.ToBoolean(row.Cells["Seleccionar"].Value))
                 {
@@ -423,15 +480,16 @@ namespace SegundoParcial.Vista
                 switch (Path.GetExtension(UltimoArchivo))
                 {
                     case ".json":
-                        this._vendedor.SerializadorProductosJson.Guardar(UltimoArchivo, listaCortes);
+                        this._vendedor.SerializadorProductosJson.GuardarComo(UltimoArchivo, listaCortes);
                         break;
                     case ".xml":
-                        this._vendedor.SerializadorProductosXml.Guardar(UltimoArchivo, listaCortes);
+                        this._vendedor.SerializadorProductosXml.GuardarComo(UltimoArchivo, listaCortes);
                         break;
                 }
             }
             catch (Exception ex)
             {
+                this.PlayError();
                 MostrarVentanaDeError(ex);
             }
         }
@@ -453,13 +511,14 @@ namespace SegundoParcial.Vista
             }
             catch (Exception ex)
             {
+                this.PlayError();
                 MostrarVentanaDeError(ex);
             }
         }
 
         private void btnGuardar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             if (!File.Exists(UltimoArchivo))
             {
                 GuardarComo();
@@ -472,51 +531,51 @@ namespace SegundoParcial.Vista
 
         private void btnGuardarComo_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             GuardarComo();
         }
 
         private void btnSeleccionarTodos_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             this.SetColumnaSeleccionar(true);
         }
 
         private void btnDeseleccionarTodos_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             this.SetColumnaSeleccionar(false);
         }
 
         private void btnCancelar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             this.SetOpcionesSerializacion(false);
 
         }
 
         private void msiSerializar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             this.SetOpcionesSerializacion(true);
         }
 
         private void btnFiltrar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             this.BuscarFiltro();
         }
 
         private void btnLimpiarFiltro_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             this.lblFiltroBuscado.Text = string.Empty;
             this.CargarTablaDeProductos(this._vendedor.GetProductos((Filtros)this.cbxFiltro.SelectedItem));
         }
 
         private void msiVender_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             FrmVendedor frmVendedor = new FrmVendedor(this._vendedor);
             frmVendedor.ShowDialog();
             //frmVendedor.Show();
@@ -525,7 +584,7 @@ namespace SegundoParcial.Vista
 
         private void msiHistorial_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
 
             FrmHistorial frmHistorial = new FrmHistorial(this._vendedor);
             frmHistorial.ShowDialog();

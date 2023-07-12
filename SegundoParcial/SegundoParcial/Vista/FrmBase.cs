@@ -13,8 +13,8 @@ namespace SegundoParcial.Vista
 {
     public partial class FrmBase : Form
     {
-        protected SoundPlayer _playerError;
-        protected SoundPlayer _playerClick;
+        private SoundPlayer _playerError;
+        private SoundPlayer _playerClick;
         public FrmBase()
         {
             InitializeComponent();
@@ -50,6 +50,16 @@ namespace SegundoParcial.Vista
             sb.AppendLine(ex.StackTrace);
 
             MessageBox.Show(sb.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        protected void PlayClick()
+        {
+            this._playerClick.Play();
+        }
+
+        protected void PlayError()
+        {
+            this._playerError.Play();
         }
     }
 }

@@ -68,18 +68,19 @@ namespace BibliotecaEntidades.Entidades
 
         public static explicit operator FacturaItem(string linea)
         {
-            Regex rx = new Regex(@"^IdCorte:(\d+),NombreCorte:([a-zA-Z]+),CantidadKilos:([0-9]*\.{0,1}[0-9]*),PrecioKiloCorte:([0-9]*\.{0,1}[0-9]*),PrecioProducto:([0-9]*\.{0,1}[0-9]*)");
+            Regex rx = new Regex(@"^IdCorte:(\d+),NombreCorte:([a-zA-Z\s]+),CantidadKilos:([0-9]*\.{0,1}[0-9]*),PrecioKiloCorte:([0-9]*\.{0,1}[0-9]*),PrecioProducto:([0-9]*\.{0,1}[0-9]*)$");
             string[] parametros;
             if (!rx.IsMatch(linea))
             {
                 throw new ArchivoIncorrectoExcepcion("ERROR, Formato incorrecto");
             }
             parametros = rx.Split(linea);
+            
             return new FacturaItem(
-                int.Parse(parametros[0]),
-                parametros[1],
-                double.Parse(parametros[2]),
-                double.Parse(parametros[3])
+                int.Parse(parametros[1]),
+                parametros[2],
+                double.Parse(parametros[3]),
+                double.Parse(parametros[4])
                 );
         }
 

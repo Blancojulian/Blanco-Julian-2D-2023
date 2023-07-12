@@ -11,7 +11,7 @@ namespace BibliotecaEntidades.Serializacion
 {
     public class XML<T> : Archivo, IArchivo<T> where T : class, new()
     {
-        protected override string Extension => ".txt";
+        protected override string Extension => ".xml";
 
 
         private void Serializar(string ruta, List<T> contenido)
@@ -47,7 +47,7 @@ namespace BibliotecaEntidades.Serializacion
             {
                 using (StreamReader streamReader = new StreamReader(ruta))
                 {
-                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
+                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<T>));
                     datos = xmlSerializer.Deserialize(streamReader) as List<T>;
                 }
             }

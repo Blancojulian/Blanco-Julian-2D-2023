@@ -60,7 +60,7 @@ namespace SegundoParcial.Vista
         {
             try
             {
-                this._playerClick.Play();
+                this.PlayClick();
 
                 if ((this.rbtnDebito.Checked || this.rbtnCredito.Checked) &&
                     this._factura.Productos.Count > 0 &&
@@ -71,27 +71,27 @@ namespace SegundoParcial.Vista
                 }
                 else if ((!this.rbtnDebito.Checked && !this.rbtnCredito.Checked))
                 {
-                    this._playerError.Play();
-
+                    this.PlayError();
                     MessageBox.Show("Debe seleccionar Credito o Debito");
                 }
                 else
                 {
-                    this._playerError.Play();
-
+                    this.PlayError();
                     MessageBox.Show("Fallo al realizar la compra");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                this.PlayError();
+                MostrarVentanaDeError(ex);
+                //MessageBox.Show(ex.Message);
             }
             
         }
 
         private void btnCancelar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
 
             this.DialogResult = DialogResult.Cancel;
             this.Close();

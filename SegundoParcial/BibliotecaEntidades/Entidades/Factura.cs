@@ -15,20 +15,13 @@ using System.Threading.Tasks;
 namespace BibliotecaEntidades.Entidades
 {
     public delegate void ActualizarUltimoNumeroFactura(int numero);
-    //ver si crear clase abstracta Comprobante que herede Factura y una nueva clase OrdenDePago, esta va a
-    // tener la task y evento que buscan el ultimo numero defactura
-    //cliente va usar OrdenDePago y vendedor factura
-    //ver bien como quedaria esto en la base de datos, si se puede agregar un campo que diga si es orden de pago
-    //que el campo vendido indique si es Factura o orden
-    //no, sigue estando el mismo problema que la orden actuliza el ultimo numero siempre
-    //mejor hacer un atributo en Factura que diga si la ordenaron
-    // o agregar el atributo que diga si la ordenaron orden de pago
-    //mejor agregar atributo a Factura y dejarme de joder la vida
-    // o agregar un campo en la base de datos que diga el estado y usuar un enum en la clase
-    //IMPORTANTE ver si agregar un campo en db y clase que diga cuantos productos tiene, asi se sabe si tendria que tener productos
+    public delegate void ActulizarDatosFactura(Factura factura);
+    
     public class Factura : ITrabajarConTxt
     {
-        public event ActualizarUltimoNumeroFactura OnActualizarUltimoNumeroFactura;
+        private event ActualizarUltimoNumeroFactura OnActualizarUltimoNumeroFactura;
+        public event ActulizarDatosFactura OnActulizarDatosFactura;
+
         private Dictionary<int, FacturaItem> _productos;
         private int _dniCliente;
         private int _numeroFactura;
@@ -37,8 +30,8 @@ namespace BibliotecaEntidades.Entidades
         private EstadoFactura _estadoFactura;
         private int _ultimoNumeroFactura;
         private Task _taskRefrescarNumero;
-
-        
+        private CancellationTokenSource _cts;
+        private CancellationToken _ct;
 
         private Factura(int numeroFactura, bool credito, EstadoFactura estado, int dniCliente, string nombreCliente, Dictionary<int, FacturaItem> productos)
         {
@@ -53,10 +46,10 @@ namespace BibliotecaEntidades.Entidades
 
             if (this._estadoFactura == EstadoFactura.Orden)
             {
-                //this._ultimoNumeroFactura = ClaseDAO.FacturaDAO.GetUltimoNumeroFactura();
+                this._cts = new CancellationTokenSource();
+                this._ct = _cts.Token;
                 OnActualizarUltimoNumeroFactura += ActualizarNumeroFacturaDeLaInstancia;
-                this._taskRefrescarNumero = Task.Run(RefrescarNumero);
-                //this._numeroFactura = _ultimoNumeroFactura + 1;
+                this._taskRefrescarNumero = Task.Run(RefrescarNumero, this._cts.Token);
             }
 
 
@@ -87,24 +80,20 @@ namespace BibliotecaEntidades.Entidades
             get => this._estadoFactura;
             set//una vez que la factura tiene otro estado que sea orden, no se puede volver a orden
             {
-                if (value != EstadoFactura.Orden)//cambiando de estado orden a otro
+                if (Estado == EstadoFactura.Orden && value != EstadoFactura.Orden)//cambiando de estado orden a otro
                 {
+                    this._cts.Cancel();
                     OnActualizarUltimoNumeroFactura -= ActualizarNumeroFacturaDeLaInstancia;
                     this._estadoFactura = value;
                 }
-                else if (!(Estado != EstadoFactura.Orden && value == EstadoFactura.Orden))//se niega el cambio de cualquier otro estado que no sea orden a orden
+                else if (Estado != EstadoFactura.Orden && value != EstadoFactura.Orden)//cambiando de estado a cualquier otro que no sea Orden
                 {
-                    /*
-                    this._ultimoNumeroFactura = ClaseDAO.FacturaDAO.GetUltimoNumeroFactura();
-                    this._numeroFactura = _ultimoNumeroFactura + 1;
-                    OnActualizarUltimoNumeroFactura += ActualizarNumeroFacturaDeLaInstancia;*/
                     this._estadoFactura = value;
 
                 }
 
             }
         }
-        //public MetodoPago MetodoPago { get => this._metodoPago; set => this._metodoPago = value; }
         [JsonIgnore]
         public string CreditoDebito => Credito ? "Credito" : "Debito";
         [JsonIgnore]
@@ -118,7 +107,7 @@ namespace BibliotecaEntidades.Entidades
             ValidarCantidad(corte, cantidad);
             if (this._productos.ContainsKey(corte.Id))
             {
-                throw new ErrorOperacionCompraExcepcion($"El producto {corte.Nombre} ya se esta en el carrito");
+                throw new FacturaExcepcion($"El producto {corte.Nombre} ya se esta en el carrito");
             }
 
             bool retorno = !this._productos.ContainsKey(corte.Id);
@@ -128,6 +117,7 @@ namespace BibliotecaEntidades.Entidades
             if (retorno)
             {
                 this._productos.Add(item.IdCorte, item);
+                OnActulizarDatosFactura?.Invoke(this);
             }
 
             return retorno;
@@ -137,7 +127,7 @@ namespace BibliotecaEntidades.Entidades
             ValidarCantidad(corte, cantidad);
             if (!this._productos.ContainsKey(corte.Id))
             {
-                throw new ErrorOperacionCompraExcepcion($"El producto {corte.Nombre} no se encuentra en el carrito");
+                throw new FacturaExcepcion($"El producto {corte.Nombre} no se encuentra en el carrito");
             }
 
             bool retorno = this._productos.ContainsKey(corte.Id);
@@ -145,6 +135,7 @@ namespace BibliotecaEntidades.Entidades
             if (retorno)
             {
                 this._productos[corte.Id].CantidadKilos = cantidad;
+                OnActulizarDatosFactura?.Invoke(this);
             }
 
             return retorno;
@@ -153,13 +144,14 @@ namespace BibliotecaEntidades.Entidades
         {
             if (!this._productos.ContainsKey(idProducto))
             {
-                throw new ErrorOperacionCompraExcepcion($"El producto no se encuentra en el carrito");
+                throw new FacturaExcepcion($"El producto no se encuentra en el carrito");
             }
             bool retorno = this._productos.ContainsKey(idProducto);
 
             if (retorno)
             {
                 this._productos.Remove(idProducto);
+                OnActulizarDatosFactura?.Invoke(this);
             }
 
             return retorno;
@@ -167,47 +159,51 @@ namespace BibliotecaEntidades.Entidades
         public void EliminarProducto()
         {
             this._productos.Clear();
+            OnActulizarDatosFactura?.Invoke(this);
         }
-        //crear excepciones propias para estos errores como ErrorFacturaExcepcion
         private void ValidarCantidad(Corte corte, double cantidad)
         {
             if (corte is null)
             {
-                throw new ErrorOperacionCompraExcepcion($"Debe seleccionar un producto");
+                throw new FacturaExcepcion($"Debe seleccionar un producto");
             }
             if (corte.Id <= 0)
             {
-                throw new ErrorOperacionCompraExcepcion($"El Id {corte.Id} no es valido");
+                throw new FacturaExcepcion($"El Id {corte.Id} no es valido");
             }
             if (!(corte - cantidad))
             {
-                throw new ErrorOperacionCompraExcepcion($"Stock de {corte.Nombre} insuficiente");
+                throw new FacturaExcepcion($"Stock de {corte.Nombre} insuficiente");
             }
             if (cantidad <= 0d)
             {
-                throw new ErrorOperacionCompraExcepcion($"La cantidad de {corte.Nombre} ingresada debe ser mayor a cero");
+                throw new FacturaExcepcion($"La cantidad de {corte.Nombre} ingresada debe ser mayor a cero");
             }
         }
 
         public void ValidarCarrito()
-        {
+        {//ver si cambiar a una nueva excepcion, FacturaExcepcion
             if (this.Productos.Count <= 0)
             {
-                throw new ErrorOperacionCompraExcepcion("Debe tener productos en el carrito para realizar la compra");
+                throw new FacturaExcepcion("Debe tener productos en el carrito para realizar la compra");
             }
 
             foreach (KeyValuePair<int, FacturaItem> p in this.Productos)
             {
+                if (p.Value is null)
+                {
+                    throw new FacturaExcepcion($"Error, no se agrego datos del corte para el Id {p.Key}");
+
+                }
                 if (p.Value.CantidadKilos <= 0)
                 {
-                    throw new ErrorOperacionCompraExcepcion($"La cantidad de {p.Value.NombreCorte} debe ser mayor a cero");
+                    throw new FacturaExcepcion($"La cantidad de {p.Value.NombreCorte} debe ser mayor a cero");
                 }
             }
         }
 
         private double CalcularTotal()
         {
-            double precio;
             double total = 0d;
             
             foreach (KeyValuePair<int, FacturaItem> producto in this._productos)
@@ -267,7 +263,7 @@ namespace BibliotecaEntidades.Entidades
         }
         public static explicit operator Factura(string linea)
         {
-            Regex rx = new Regex(@"^NumeroFactura:(\d+),Credito:(true|false),Estado:(Vendido|Pendiente),DniCliente:(\d+),NombreCliente:([a-zA-Z]+),Productos:(\[.*\])$");
+            Regex rx = new Regex(@"^NumeroFactura:(\d+),Credito:(True|False),Estado:(Vendido|Pendiente),DniCliente:(\d+),NombreCliente:([a-zA-Z\s]+),Productos:(\[.*\])$");
             string[] parametros;
             string strProductos = "";
             if (!rx.IsMatch(linea))
@@ -276,19 +272,20 @@ namespace BibliotecaEntidades.Entidades
             }
             
             parametros = rx.Split(linea);
-            strProductos = parametros[5];
+            strProductos = parametros[6];
             strProductos = strProductos.Replace("[","").Replace("]","");
+
             Dictionary<int,FacturaItem> productos = strProductos.Split(';')
                 .Select(part => (FacturaItem)part)
                 .ToDictionary(part => part.IdCorte, part => part);
-            EstadoFactura estado = (EstadoFactura)Enum.Parse(typeof(EstadoFactura), parametros[2]);
+            EstadoFactura estado = (EstadoFactura)Enum.Parse(typeof(EstadoFactura), parametros[3]);
 
             return new Factura(
-                int.Parse(parametros[0]),
-                bool.Parse(parametros[1]),
+                int.Parse(parametros[1]),
+                bool.Parse(parametros[2]),
                 estado,
-                int.Parse(parametros[3]),
-                parametros[4],
+                int.Parse(parametros[4]),
+                parametros[5],
                 productos
                 ) ;
 
@@ -307,24 +304,40 @@ namespace BibliotecaEntidades.Entidades
             if (Estado == EstadoFactura.Orden)
             {
                 this._numeroFactura = ultimoNumero + 1;
+                OnActulizarDatosFactura?.Invoke(this);
 
             }
         }
         private void RefrescarNumero()
         {
-            int numero = 0;
-            while (true)
+            try
             {
-                numero = ClaseDAO.FacturaDAO.GetUltimoNumeroFactura();
-
-                if (_ultimoNumeroFactura != numero)
+                this._ct.ThrowIfCancellationRequested();
+                int numero = 0;
+                while (true)
                 {
-                    _ultimoNumeroFactura = numero;
-                    OnActualizarUltimoNumeroFactura?.Invoke(numero);
+                    if (this._ct.IsCancellationRequested)
+                    {
+                        this._ct.ThrowIfCancellationRequested();
+                    }
+                    //this.OnSolicitarUltimoNumeroFactura?.Invoke();
+                    numero = ClaseDAO.FacturaDAO.GetUltimoNumeroFactura();
+
+                    if (_ultimoNumeroFactura != numero)
+                    {
+                        _ultimoNumeroFactura = numero;
+                        OnActualizarUltimoNumeroFactura?.Invoke(numero);
+                    }
+                    Thread.Sleep(1000);
                 }
-                Thread.Sleep(1000);
             }
+            catch (Exception)
+            {
+
+            }
+            
         }
+        
 
     }
 }

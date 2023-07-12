@@ -12,17 +12,16 @@ using System.Threading.Tasks;
 
 namespace BibliotecaEntidades.Entidades
 {
-    public delegate void NoficarVenta(string mensaje);
+    public delegate void NoficarVenta(InfoVentaEventArgs info);
     public delegate void NotificarStockCorte(InfoStockEventArgs info);
+    public delegate void ErrorEnHilo(Exception ex);
 
-
-    //invocar al evento estatico de OnActualizarNombreProductos de la clase Factura
-    //para que refresque su lista de nombres de productos
     public class Vendedor : Usuario
     {
-
         public event NoficarVenta OnVentaRealizada;
         public event NotificarStockCorte OnReponerStock;
+        public event ErrorEnHilo OnErrorEnHiloSecundario;
+
         private JSON<Corte> _serializadorProductosJson;
         private XML<Corte> _serializadorProductosXml;
         private TXT<Factura> _serializadorFacturasTxt;
@@ -42,33 +41,46 @@ namespace BibliotecaEntidades.Entidades
         {
             double total = factura.Total;
             int filas = 0;
-            if (cliente is null)
+            
+            try
             {
-                throw new ErrorOperacionVentaExcepcion($"Debe seleccionar un cliente");
+                if (cliente is null)
+                {
+                    throw new ErrorOperacionVendedorExcepcion($"Debe seleccionar un cliente");
 
+                }
+
+                if (factura.Estado == EstadoFactura.Vendido)
+                {
+                    throw new VentaYaRealizada("Venta ya realizada");
+                }
+
+                if (!(cliente - total))
+                {
+                    throw new DineroExcepcion("El cliente no tiene dinero sufiente");
+                }
+
+                factura.ValidarCarrito();
+                HayStockCortes(factura);
+
+                Cliente.GastarDinero(cliente, total);
+                factura.Estado = EstadoFactura.Vendido;
+
+                filas += ClaseDAO.UsuarioDAO.InsertOrUpdateDinero(cliente);
+                filas += ClaseDAO.FacturaDAO.Update(factura.NumeroFactura, factura);
+
+                OnVentaRealizada?.Invoke(new InfoVentaEventArgs(total, cliente.MostrarNombreApellido(), factura.NumeroFactura.PasarANumeroFactura()));
+                
             }
-
-            if (factura.Estado == EstadoFactura.Orden)
+            catch (ErrorOperacionVendedorExcepcion)
             {
-                throw new VentaYaRealizada("Venta ya realizada");
+                throw;
             }
-
-            if (!(cliente - total))
+            catch (Exception ex)
             {
-                throw new DineroExcepcion("El cliente no tiene dinero sufiente");
+
+                throw new ErrorOperacionVendedorExcepcion("Error al realizar venta", ex);
             }
-
-            HayStockCortes(factura);
-
-            Cliente.GastarDinero(cliente, total);
-            factura.Estado = EstadoFactura.Vendido;
-            //ver si estoy modificando el dinero en update
-            filas += ClaseDAO.UsuarioDAO.Update(cliente.Dni, cliente);
-            filas += ClaseDAO.FacturaDAO.Update(factura.NumeroFactura, factura);
-
-            OnVentaRealizada?.Invoke($"Venta realizada al cliente {factura.NombreCliente} " +
-                $"comprobante {factura.NumeroFactura.PasarANumeroFactura()} Total {total}");
-
             return filas >= 2;
         }
 
@@ -77,44 +89,78 @@ namespace BibliotecaEntidades.Entidades
             bool retorno = true;
             Dictionary<int, FacturaItem> productos = factura.Productos;
             List<Corte> listaCortes;
+            StringBuilder sb = new StringBuilder();
 
             if (productos.Count <= 0)
             {
-                throw new ErrorOperacionVentaExcepcion($"No se ingresaron productos al carrito");
+                throw new ErrorOperacionVendedorExcepcion($"No se ingresaron productos al carrito");
 
             }
 
             listaCortes = ClaseDAO.CorteDAO.GetAll(productos.Keys.ToArray());
 
+            sb.AppendLine("No hay stock de los siguientes cortes:");
             foreach (Corte corte in listaCortes)
             {
                 if (!corte.Disponible)
                 {
                     retorno = false;
-                    throw new ErrorOperacionVentaExcepcion($"No hay stock de {corte.Nombre} ID:{corte.Id}");
+                    sb.AppendLine($"-{corte.Nombre} ID:{corte.Id}");
                 }
+            }
+
+            if (!retorno)
+            {
+                throw new ErrorOperacionVendedorExcepcion(sb.ToString());
+
             }
 
             return retorno;
         }
 
-        //hacer que simule un pedido de mercaderia y que avise cuando llegue con un evento
-        public void ReponerStock(Corte corte, double stock)
+        public async Task ReponerStock(Corte corte, double stock)
         {
-
-            if (corte is not null)
+            
+            try
             {
-                Task.Run(() =>
+                
+                if (corte is null)
                 {
-                    corte.StockKilos += stock;
-                    ClaseDAO.CorteDAO.Update(corte.Id, corte);
-                    Thread.Sleep(3000);
-                    OnReponerStock?.Invoke(new InfoStockEventArgs(corte.Nombre, stock));
+                    throw new ErrorOperacionVendedorExcepcion("Debe Selecionar un corte");
+                }
+
+
+                await Task.Run(() =>
+                {
+                    try
+                    {
+                        CorteDAO corteDAO = new CorteDAO();// instanciando otra CorteDAO ya no tira error porque son 2 conecciones distintas
+                        
+                        Thread.Sleep(3000);
+                        corte.StockKilos += stock;
+                        corteDAO.Update(corte.Id, corte);
+                        OnReponerStock?.Invoke(new InfoStockEventArgs(corte.Nombre, stock));
+                    }
+                    catch (Exception ex)
+                    {
+                        OnErrorEnHiloSecundario?.Invoke(ex);
+
+                    }
                 });
+
+            }
+            catch (ErrorOperacionVendedorExcepcion)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+
+                throw new ErrorOperacionVendedorExcepcion("Error al reponer stock", ex);
             }
 
         }
-
+        
         public int AgregarCorte(Corte corte)
         {
             return ClaseDAO.CorteDAO.Add(corte);
@@ -127,6 +173,10 @@ namespace BibliotecaEntidades.Entidades
 
         public int EliminarCorte(int idCorte)
         {
+            if (ClaseDAO.CorteDAO.CorteTieneComprasAsociadas(idCorte))
+            {
+                throw new ErrorOperacionVendedorExcepcion("El producto tiene comprobantes asociados, no se puede eliminar");
+            }
             return ClaseDAO.CorteDAO.Delete(idCorte);
         }
 
@@ -175,7 +225,7 @@ namespace BibliotecaEntidades.Entidades
                     lista = ClaseDAO.CorteDAO.GetAll();
                     break;
                 default:
-                    throw new Exception("Error, debe seleccionar un filtro valido");
+                    throw new ErrorOperacionVendedorExcepcion("Error, debe seleccionar un filtro valido");
                     break;
             }
             return lista;

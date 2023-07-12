@@ -11,7 +11,7 @@ namespace BibliotecaEntidades.Entidades
         private string _nombreCorte;
         private double _stockRepuesto;
 
-        public InfoStockEventArgs(string nombre, double stock)
+        public InfoStockEventArgs(string nombre, double stock) : base()
         {
             this._nombreCorte = nombre;
             this._stockRepuesto = stock;

@@ -42,6 +42,8 @@
             this.btnDeseleccionarTodas = new System.Windows.Forms.Button();
             this.btnGuardar = new System.Windows.Forms.Button();
             this.btnGuardarComo = new System.Windows.Forms.Button();
+            this.btnAbrir = new System.Windows.Forms.Button();
+            this.btnSalir = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dtgvHistorial)).BeginInit();
             this.SuspendLayout();
             // 
@@ -185,11 +187,36 @@
             this.btnGuardarComo.UseVisualStyleBackColor = true;
             this.btnGuardarComo.Click += new System.EventHandler(this.btnGuardarComo_Click);
             // 
+            // btnAbrir
+            // 
+            this.btnAbrir.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.btnAbrir.Location = new System.Drawing.Point(339, 11);
+            this.btnAbrir.Name = "btnAbrir";
+            this.btnAbrir.Size = new System.Drawing.Size(123, 25);
+            this.btnAbrir.TabIndex = 13;
+            this.btnAbrir.Text = "Abrir";
+            this.btnAbrir.UseVisualStyleBackColor = true;
+            this.btnAbrir.Click += new System.EventHandler(this.btnAbrir_Click);
+            // 
+            // btnSalir
+            // 
+            this.btnSalir.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.btnSalir.ForeColor = System.Drawing.Color.Red;
+            this.btnSalir.Location = new System.Drawing.Point(339, 42);
+            this.btnSalir.Name = "btnSalir";
+            this.btnSalir.Size = new System.Drawing.Size(123, 25);
+            this.btnSalir.TabIndex = 14;
+            this.btnSalir.Text = "Salir";
+            this.btnSalir.UseVisualStyleBackColor = true;
+            this.btnSalir.Click += new System.EventHandler(this.btnSalir_Click);
+            // 
             // FrmHistorial
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(736, 356);
+            this.Controls.Add(this.btnSalir);
+            this.Controls.Add(this.btnAbrir);
             this.Controls.Add(this.btnGuardarComo);
             this.Controls.Add(this.btnGuardar);
             this.Controls.Add(this.btnDeseleccionarTodas);
@@ -231,5 +258,7 @@
         private Button btnDeseleccionarTodas;
         private Button btnGuardar;
         private Button btnGuardarComo;
+        private Button btnAbrir;
+        private Button btnSalir;
     }
 }

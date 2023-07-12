@@ -14,6 +14,7 @@ namespace SegundoParcial.Vista
 {
     public partial class FrmLogin : FrmBase
     {
+
         public FrmLogin() : base()
         {
             InitializeComponent();
@@ -26,7 +27,7 @@ namespace SegundoParcial.Vista
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             Usuario? usuario = Login.GetUsuario(this.tbxMail.Text, this.tbxContrasenia.Text);
             FrmDinero frmDinero;
 
@@ -55,14 +56,14 @@ namespace SegundoParcial.Vista
             }
             else
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show("El mail o contraseña es INCORECTO");
             }
         }
 
         private void btnCompletarDatos_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             this.CompletarDatos();
         }
 
@@ -84,7 +85,7 @@ namespace SegundoParcial.Vista
                 }
                 else
                 {
-                    this._playerError.Play();
+                    this.PlayError();
                     MessageBox.Show("Debe seleccionar una opcion");
                 }
 
@@ -96,7 +97,7 @@ namespace SegundoParcial.Vista
             }
             catch (Exception ex)
             {
-
+                this.PlayError();
                 MostrarVentanaDeError(ex);
 
             }   
@@ -105,6 +106,21 @@ namespace SegundoParcial.Vista
         protected override void ConfigurarForm()
         {
             base.ConfigurarForm();
+            //para cuando sea mdiChildren de FrmPrincipal, probar
+            //this.ControlBox = false;
+            //this.FormBorderStyle = FormBorderStyle.None;
+            /*
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.ControlBox = false;
+            this.ShowIcon = false;
+            this.FormBorderStyle = FormBorderStyle.None;
+            this.BackColor = Color.FromArgb(255, 255, 255);
+            this.Dock = DockStyle.Fill;
+
+            this.WindowState = FormWindowState.Maximized;
+            */
+
         }
         protected override void ConfigurarColorForm()
         {

@@ -61,14 +61,12 @@ namespace SegundoParcial.Vista
             }
             else if (nombreExiste)
             {
-                this._playerError.Play();
-
+                this.PlayError();
                 MessageBox.Show("Error, el nombre ya existe");
             }
             else
             {
-                this._playerError.Play();
-
+                this.PlayError();
                 MessageBox.Show("Error, no se selecciono corte de carne");
             }
         }

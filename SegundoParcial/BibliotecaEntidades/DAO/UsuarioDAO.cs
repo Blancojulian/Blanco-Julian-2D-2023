@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
+using BibliotecaEntidades.Excepciones;
 
 namespace BibliotecaEntidades.DAO
 {
@@ -276,13 +277,7 @@ namespace BibliotecaEntidades.DAO
                 _sqlCommand.Parameters.AddWithValue("@apellido", datos.Apellido);
                 _sqlCommand.Parameters.AddWithValue("@mail", datos.Mail);
                 _sqlCommand.Parameters.AddWithValue("@contrasenia", Usuario.DatosLogin(datos));
-
-                if (datos.GetType() == typeof(Cliente) || datos is Cliente)
-                {
-                    _sqlCommand.Parameters.AddWithValue("@monto", (float)((Cliente)datos).Dinero);
-                    comando += " UPDATE Dinero SET monto = @monto WHERE dniCliente = @dni;";
-                }
-
+                
                 _sqlCommand.CommandText = comando;
                 _sqlConnection.Open();
 
@@ -331,7 +326,49 @@ namespace BibliotecaEntidades.DAO
             return filas;
         }
 
+        public int InsertOrUpdateDinero(Cliente cliente)
+        {
+            int filas = 0;
+            string comando = string.Empty;
 
+            try
+            {
+                _sqlCommand.Parameters.Clear();
+                _sqlCommand.CommandText = "SELECT * FROM Dinero WHERE dniCliente = @dni;";
+                _sqlCommand.Parameters.AddWithValue("@dni", cliente.Dni);
+                _sqlConnection.Open();
+
+                using (SqlDataReader dataReader = _sqlCommand.ExecuteReader())
+                {
+                    if (dataReader.Read())
+                    {
+                        comando = "UPDATE Dinero SET monto = @monto WHERE dniCliente = @dni;";
+                    }
+                    else
+                    {
+                        comando = "INSERT INTO Dinero(dniCliente, monto) VALUES(@dni, @monto);";
+
+                    }
+                }
+                _sqlCommand.Parameters.AddWithValue("@monto", cliente.Dinero);
+                _sqlCommand.CommandText = comando;
+
+                filas = _sqlCommand.ExecuteNonQuery();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (_sqlConnection.State == ConnectionState.Open)
+                {
+                    _sqlConnection.Close();
+                }
+            }
+
+            return filas;
+        }
         private string ComandoGetAllPorTipoDeUsuario(Type tipo)
         {
             string command = "SELECT * FROM Usuario LEFT JOIN Dinero ON Usuario.dni = Dinero.dniCliente";

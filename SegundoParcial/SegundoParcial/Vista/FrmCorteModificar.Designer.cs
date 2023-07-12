@@ -33,16 +33,32 @@
             ((System.ComponentModel.ISupportInitialize)(this.nudStock)).BeginInit();
             this.SuspendLayout();
             // 
+            // nudPrecio
+            // 
+            this.nudPrecio.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+            // 
+            // nudStock
+            // 
+            this.nudStock.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+            // 
             // cbxCategoria
             // 
             this.cbxCategoria.DataSource = new Categorias[] {
         Categorias.Primera,
         Categorias.Segunda,
-        Categorias.Tercera};
+        Categorias.Tercera};/*
             this.cbxCategoria.Items.AddRange(new object[] {
             Categorias.Primera,
             Categorias.Segunda,
-            Categorias.Tercera});
+            Categorias.Tercera});*/
             // 
             // chbxNombre
             // 

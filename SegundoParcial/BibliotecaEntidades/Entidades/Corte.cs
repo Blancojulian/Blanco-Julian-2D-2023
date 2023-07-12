@@ -37,7 +37,7 @@ namespace BibliotecaEntidades.Entidades
         {
 
         }
-        public int Id => this._id;
+        public int Id { get => this._id; set => this._id = value; }
         public string Nombre
         {
             get => this._nombre;
@@ -75,19 +75,7 @@ namespace BibliotecaEntidades.Entidades
         public static bool operator -(Corte c, double cantidadKilos)
         {
             return c is not null && c._stockKilos - cantidadKilos >= 0;
-        }/*
-        public static bool operator ==(Corte c, string strFiltro)
-        {
-            strFiltro = strFiltro.Trim().ToLower();
-            return c is not null && ( c._nombre.ToLower().Contains(strFiltro) ||
-                (c._detalle is not null && c._detalle.ToLower().Contains(strFiltro)) ||
-                c._categoria.ToString().ToLower().Contains(strFiltro) ||
-                c._id.ToString().ToLower().Contains(strFiltro) );
         }
-        public static bool operator !=(Corte c, string strFiltro)
-        {
-            return !(c == strFiltro);
-        }*/
 
         public static explicit operator Corte(SqlDataReader r)
         {

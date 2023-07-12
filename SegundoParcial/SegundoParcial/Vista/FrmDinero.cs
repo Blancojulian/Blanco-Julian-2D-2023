@@ -34,20 +34,21 @@ namespace SegundoParcial.Vista
 
             try
             {
-                
+
                 this._cliente.ActulizarDinero((double)monto);
                 this.DialogResult = DialogResult.OK;
+
                 this.Close();
                
             }
             catch (DineroExcepcion ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show(ex.Message);
             }
             catch (Exception ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MostrarVentanaDeError(ex);
             }
             
@@ -55,13 +56,13 @@ namespace SegundoParcial.Vista
         
         private void btnConfirmar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             this.ConfirmarDineroDisponible();
         }
 
         private void btnCancelar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             this.DialogResult = DialogResult.Cancel;
             this.Close();
         }

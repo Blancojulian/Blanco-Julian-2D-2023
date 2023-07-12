@@ -13,7 +13,10 @@ namespace BibliotecaEntidades.Entidades
 {
     public class Cliente : Usuario
     {
-
+        public delegate void GastarDineroCliente(InfoDineroEventArgs infoDinero);
+        public delegate void ActualizarDinero(double dineroActual);
+        public event GastarDineroCliente OnGastarDinero;
+        public event ActualizarDinero OnActualizarDinero;
         private double _dinero;
 
         public Cliente(string nombre, string apellido, int dni, string mail, string contrasenia, double dinero) : base(nombre, apellido, dni, mail, contrasenia)
@@ -32,19 +35,11 @@ namespace BibliotecaEntidades.Entidades
                 if (value > 0)
                 {
                     this._dinero = value;
+                    OnActualizarDinero?.Invoke(value);
                 }
             }
         }
 
-        //hay que hacer una interfaz
-        /*
-        public override DataTable GenerarTablaDeInfomacion()
-        {
-
-            DataTable dt = Carniceria.Heladera.GenerarTablaDeProductos(Carniceria.Heladera.CortesDisponibles);
-
-            return dt;
-        }*/
         public void ActulizarDinero(double monto)
         {
             if(monto <= 0d)
@@ -53,7 +48,7 @@ namespace BibliotecaEntidades.Entidades
             }
 
             this.Dinero = monto;
-            ClaseDAO.UsuarioDAO.Update(this.Dni, this);
+            ClaseDAO.UsuarioDAO.InsertOrUpdateDinero(this);
         }
         public override string MostrarNombreApellido()
         {
@@ -69,23 +64,36 @@ namespace BibliotecaEntidades.Entidades
         {
             double total = factura.Total;
             int filas = 0;
-            bool retorno = this - total;
+            
 
-            if (retorno)
+            if (!(this - total))
             {
-                factura.NombreCliente = this.MostrarNombreApellido();
-                factura.DniCliente = this.Dni;
-                factura.Estado = EstadoFactura.Pendiente;
-                ClaseDAO.FacturaDAO.Add(factura);
+                throw new DineroExcepcion($"Dinero insuficiente, le falta {total - this._dinero}");
             }
+            
+            factura.NombreCliente = this.MostrarNombreApellido();
+            factura.DniCliente = this.Dni;
+            factura.Estado = EstadoFactura.Pendiente;
+            filas = ClaseDAO.FacturaDAO.Add(factura);
+            
 
-            return retorno && filas > 0;
+            return filas > 0;
         }
 
 
         public static void GastarDinero(Cliente cliente, double dinero)
         {
+            if (!(cliente - dinero))
+            {
+                throw new DineroExcepcion($"El cliente {cliente.MostrarNombreApellido()} no tiene " +
+                    $"dinero suficiente para realizar la operación, le falta {dinero - cliente._dinero}");
+
+            }
             cliente._dinero -= dinero;
+            //ver si usa ActulizarDinero, pero no acepta valores menores a cero
+            ClaseDAO.UsuarioDAO.InsertOrUpdateDinero(cliente);
+            cliente.OnGastarDinero?.Invoke(new InfoDineroEventArgs(dinero, cliente._dinero));
+
         }
 
         public static bool operator -(Cliente cliente, double dinero)
@@ -93,10 +101,6 @@ namespace BibliotecaEntidades.Entidades
             return cliente is not null && cliente._dinero - dinero >= 0;
         }
 
-
-
-
-        //ver si no trae problemas r["dinero"] cuando no se trae en la consulta
         public static explicit operator Cliente?(SqlDataReader r)
         {
             Cliente c;

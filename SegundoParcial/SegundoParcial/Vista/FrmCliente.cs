@@ -31,12 +31,13 @@ namespace SegundoParcial.Vista
         }
         private void FrmCliente_Load(object sender, EventArgs e)
         {
-            this.CargarMontos();
+            this.ActualizarDatosFactura(this._factura);
+            this.ActualizarDinero(this._cliente.Dinero);
             this.ConfigurarDataGrid();
             this.CargarTablaDeProductos();
-            this.lblDetalle.Text = string.Empty;
-            this.lblSaludo.Text += this._cliente.MostrarNombreApellido();
-            this._factura.OnActualizarUltimoNumeroFactura += ActualizarNumeroDeFactura;
+            this.lblSaludo.Text = this._cliente.MostrarNombreApellido();
+            this._factura.OnActulizarDatosFactura += ActualizarDatosFactura;
+            this._cliente.OnActualizarDinero += ActualizarDinero;
         }
 
         private void CargarTablaDeProductos()
@@ -60,7 +61,7 @@ namespace SegundoParcial.Vista
                 foreach (DataGridViewRow row in this.dtgvDatos.Rows)
                 {
                     str = (string)row.Cells["Nombre"].Value;
-                    //va tirar error ahora se llama Nombre la columna Producto
+
                     if (row.Cells["Nombre"]?.Value is not null &&
                         !str.EsCadenaVaciaOTieneEspacios() &&
                         !string.IsNullOrEmpty(searchValue) &&
@@ -101,51 +102,43 @@ namespace SegundoParcial.Vista
             this.dtgvDatos.ClearSelection();
 
         }
-        private void CargarMontos()
-        {
-            this.lblMonto.Text = $"$ {this._cliente.Dinero:n}";
-            this.lblDetalle.Text = this._factura.DetalleProductos;
-            this.lblMontoTotal.Text = $"$ {this._factura.Total:n}";
-        }
 
-        public void ActualizarNumeroDeFactura(int numeroFactura)
+        private void ActualizarDatosFactura(Factura factura)
         {
-            //this.ActulizarLblNumeroFactura(this.lblNumeroFactura, numeroFactura);
-            if (this.lblNumeroFactura.InvokeRequired)//ver si funciona
+            if (this.InvokeRequired)//ver si funciona
             {
-                Action<int> delegado = this.ActualizarNumeroDeFactura;
-                object[] parametros = new object[] { numeroFactura };
-                this.lblNumeroFactura.Invoke(delegado, numeroFactura);
+                object[] parametros = new object[] { factura };
+                this.Invoke(this.ActualizarDatosFactura, parametros);
             }
             else
             {
-                this.lblNumeroFactura.Text = $"Factura {numeroFactura.PasarANumeroFactura()}";
+                this.lblNumeroFactura.Text = $"Factura {factura.NumeroFactura.PasarANumeroFactura()}";
+                this.lblDetalle.Text = factura.DetalleProductos;
+                this.lblMontoTotal.Text = $"$ {factura.Total:n}";
             }
         }
-
-        private void ActulizarLblNumeroFactura(Label label, int numeroFactura)
+        public void ActualizarDinero(double dineroActual)
         {
-            if (InvokeRequired)//ver si funciona
+            if (this.lblMonto.InvokeRequired)//ver si funciona
             {
-                object[] parametros = new object[] { numeroFactura };
-                label.Invoke(this.ActualizarNumeroDeFactura, parametros);
+                object[] parametros = new object[] { dineroActual };
+                this.lblMonto.Invoke(this.ActualizarDatosFactura, parametros);
             }
             else
             {
-                label.Text = $"Factura {numeroFactura.PasarANumeroFactura()}";
+                this.lblMonto.Text = $"$ {dineroActual:n}";
             }
         }
-
         private Corte GetProducto()
         {
             if (this.dtgvDatos.CurrentRow is null && this.dtgvDatos.SelectedRows.Count < 1)
             {
-                throw new ErrorOperacionCompraExcepcion("Debe selecionar un producto");
+                throw new ErrorOperacionClienteExcepcion("Debe selecionar un producto");
             }
 
             if (this.dtgvDatos.SelectedRows.Count > 1)
             {
-                throw new ErrorOperacionCompraExcepcion("Debe selecionar un solo producto");
+                throw new ErrorOperacionClienteExcepcion("Debe selecionar un solo producto");
             }
             
             return (Corte)this.dtgvDatos.CurrentRow.DataBoundItem;
@@ -154,7 +147,8 @@ namespace SegundoParcial.Vista
 
         private void btnConfirmar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
+            
             double total = this._factura.Total;
 
             try
@@ -171,49 +165,45 @@ namespace SegundoParcial.Vista
                 frmCompra.ShowDialog();
 
                 if (frmCompra.DialogResult == DialogResult.OK)
-                {
+                {//ver si hay que llamar a ActualizarDatosFactura para actulizar los datos o si el evento OnActulizarDatosFactura llega a actulizarlos
                     this._factura = new Factura(this._cliente.Dni, this._cliente.MostrarNombreApellido());
-                    this.CargarMontos();
+                    this._factura.OnActulizarDatosFactura += ActualizarDatosFactura;
                     MessageBox.Show("Se realizo la compra con exito");
                 }
             }
-            catch (ErrorOperacionCompraExcepcion ex)
+            catch (ErrorOperacionClienteExcepcion ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show(ex.Message);
             }
             catch (DineroExcepcion ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show(ex.Message);
             }
             catch (Exception ex)
             {
-                this._playerError.Play();
-                MessageBox.Show(ex.Message);
+                this.PlayError();
+                MostrarVentanaDeError(ex);
             }
         }
 
         private void btnLimpiarCarrito_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
-
+            this.PlayClick();
             this._factura.EliminarProducto();
-            this.CargarMontos();
         }
 
         private void btnActualizar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
-
+            this.PlayClick();
             FrmDinero frmDinero = new FrmDinero(this._cliente);
             frmDinero.ShowDialog();
-            this.CargarMontos();
         }
 
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
+            this.PlayClick();
             this.tbxBuscar.Text = string.Empty;
             this.dtgvDatos.ClearSelection();
         }
@@ -222,29 +212,27 @@ namespace SegundoParcial.Vista
         {
             try
             {
-                this._playerClick.Play();
+                this.PlayClick();
                 double cantidad = (double)this.nudCantidad.Value;
                 Corte corte = GetProducto();
-                if (this._factura.AgregarProducto(corte, cantidad))
-                {
-                    this.CargarMontos();
-                }
+                this._factura.AgregarProducto(corte, cantidad);
+                
 
 
             }
-            catch (ErrorOperacionCompraExcepcion ex)
+            catch (ErrorOperacionClienteExcepcion ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show(ex.Message);
             }
             catch (DineroExcepcion ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show(ex.Message);
             }
             catch (Exception ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MostrarVentanaDeError(ex);
             }
             
@@ -254,27 +242,25 @@ namespace SegundoParcial.Vista
         {
             try
             {
-                this._playerClick.Play();
+                this.PlayClick();
                 double cantidad = (double)this.nudCantidad.Value;
                 Corte corte = GetProducto();
-                if (this._factura.ModificarProducto(corte, cantidad))
-                {
-                    this.CargarMontos();
-                }
+                this._factura.ModificarProducto(corte, cantidad);
+                
             }
-            catch (ErrorOperacionCompraExcepcion ex)
+            catch (ErrorOperacionClienteExcepcion ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show(ex.Message);
             }
             catch (DineroExcepcion ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show(ex.Message);
             }
             catch (Exception ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MostrarVentanaDeError(ex);
             }
         }
@@ -283,42 +269,29 @@ namespace SegundoParcial.Vista
         {
             try
             {
-                
-                //MessageBox.Show("El producto no se encuentra en el carrito");
 
-                this._playerClick.Play();
+                this.PlayClick();
                 Corte corte = GetProducto();
-                if (this._factura.EliminarProducto(corte.Id))
-                {
-                    this.CargarMontos();
-                }
+                this._factura.EliminarProducto(corte.Id);
+                
             }
-            catch (ErrorOperacionCompraExcepcion ex)
+            catch (ErrorOperacionClienteExcepcion ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show(ex.Message);
             }
             catch (DineroExcepcion ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MessageBox.Show(ex.Message);
             }
             catch (Exception ex)
             {
-                this._playerError.Play();
+                this.PlayError();
                 MostrarVentanaDeError(ex);
             }
         }
 
-        /*
-        protected override void ConfiguarForm()
-        {
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            //this.ControlBox = false;
-            this.ShowIcon = false;
-        }
-        */
         protected override void ConfigurarColorForm()
         {
             this.BackColor = Color.FromArgb(209, 157, 250);
@@ -330,6 +303,7 @@ namespace SegundoParcial.Vista
 
         private void msiCerrarSesion_Click(object sender, EventArgs e)
         {
+            this.PlayClick();
             this.OnAbrirLogin?.Invoke();
             this.Close();
         }

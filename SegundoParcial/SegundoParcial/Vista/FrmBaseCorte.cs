@@ -52,8 +52,7 @@ namespace SegundoParcial.Vista
             }
             else
             {
-                this._playerError.Play();
-
+                this.PlayError();
                 MessageBox.Show("Debe completar los campos");
             }
         }
@@ -70,7 +69,7 @@ namespace SegundoParcial.Vista
         {
             return this.nudPrecio.Value > 0 && this.nudStock.Value >= 0 &&
                 Enum.IsDefined(typeof(Categorias), this.cbxCategoria.Text) &&
-                this.tbxNombre.Text.EsCadenaVaciaOTieneEspacios() &&
+                !this.tbxNombre.Text.EsCadenaVaciaOTieneEspacios() &&
                 this.rtbxDetalle.Text is not null;
         }
 
@@ -81,15 +80,13 @@ namespace SegundoParcial.Vista
 
         private void btnConfirmar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
-
+            this.PlayClick();
             this.ConfirmarCorte();
         }
 
         private void btnCancelar_Click(object sender, EventArgs e)
         {
-            this._playerClick.Play();
-
+            this.PlayClick();
             this._corte = null;
             this.DialogResult = DialogResult.Cancel;
         }
