@@ -201,6 +201,26 @@ namespace BibliotecaEntidades.Entidades
                 }
             }
         }
+        /// <summary>
+        /// Recibe una factura, se le pasan los datos del cliente y se cambia el estado a pendiente de venta
+        /// </summary>
+        /// <param name="factura"></param>
+        /// <param name="cliente"></param>
+        /// <exception cref="FacturaExcepcion"></exception>
+        internal static void RealizarCompra(Factura factura, Cliente cliente)
+        {
+            if (cliente is null)
+            {
+                throw new FacturaExcepcion($"Debe seleccionar un cliente para añadir a la factura");
+            }
+            if (factura is null)
+            {
+                throw new FacturaExcepcion($"Debe ingresar factura factura");
+            }
+            factura.NombreCliente = cliente.MostrarNombreApellido();
+            factura.DniCliente = cliente.Dni;
+            factura.Estado = EstadoFactura.Pendiente;
+        }
 
         private double CalcularTotal()
         {

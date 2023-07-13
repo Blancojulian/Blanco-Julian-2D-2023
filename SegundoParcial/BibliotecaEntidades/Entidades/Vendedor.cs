@@ -36,7 +36,13 @@ namespace BibliotecaEntidades.Entidades
         public JSON<Corte> SerializadorProductosJson => _serializadorProductosJson;
         public XML<Corte> SerializadorProductosXml => _serializadorProductosXml;
         public TXT<Factura> SerializadorFacturasTxt => _serializadorFacturasTxt;
-
+        /// <summary>
+        /// Cambia el estado de una factura a vendido y el dinero del cliente, y se hace el update en la base de datos
+        /// </summary>
+        /// <param name="cliente"></param>
+        /// <param name="factura"></param>
+        /// <returns>retorna true si se pudo actualizar el dinero del cliente y la factura</returns>
+        /// <exception cref="ErrorOperacionVendedorExcepcion"></exception>
         public bool RealizarVenta(Cliente cliente, Factura factura)
         {
             double total = factura.Total;
@@ -76,6 +82,14 @@ namespace BibliotecaEntidades.Entidades
             {
                 throw;
             }
+            catch (VentaYaRealizada)
+            {
+                throw;
+            }
+            catch (DineroExcepcion)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
 
@@ -83,7 +97,12 @@ namespace BibliotecaEntidades.Entidades
             }
             return filas >= 2;
         }
-
+        /// <summary>
+        /// Consulta los cortes a la base de datos y verifica que haya stock
+        /// </summary>
+        /// <param name="factura"></param>
+        /// <returns></returns>
+        /// <exception cref="ErrorOperacionVendedorExcepcion"></exception>
         private static bool HayStockCortes(Factura factura)
         {
             bool retorno = true;
@@ -117,7 +136,13 @@ namespace BibliotecaEntidades.Entidades
 
             return retorno;
         }
-
+        /// <summary>
+        /// Repone el stock ingresado luego de 3 segundos
+        /// </summary>
+        /// <param name="corte"></param>
+        /// <param name="stock"></param>
+        /// <returns></returns>
+        /// <exception cref="ErrorOperacionVendedorExcepcion"></exception>
         public async Task ReponerStock(Corte corte, double stock)
         {
             
@@ -160,17 +185,31 @@ namespace BibliotecaEntidades.Entidades
             }
 
         }
-        
+        /// <summary>
+        /// Agrega un corte a la base de datos
+        /// </summary>
+        /// <param name="corte"></param>
+        /// <returns></returns>
         public int AgregarCorte(Corte corte)
         {
             return ClaseDAO.CorteDAO.Add(corte);
         }
-
+        /// <summary>
+        /// Modifica un corte en la base de datos
+        /// </summary>
+        /// <param name="idCorte"></param>
+        /// <param name="corte"></param>
+        /// <returns></returns>
         public int ModificarCorte(int idCorte, Corte corte)
         {
             return ClaseDAO.CorteDAO.Update(idCorte, corte);
         }
-
+        /// <summary>
+        /// Elimina un corte en la base de datos por Id
+        /// </summary>
+        /// <param name="idCorte">id del corte a eliminar</param>
+        /// <returns></returns>
+        /// <exception cref="ErrorOperacionVendedorExcepcion"></exception>
         public int EliminarCorte(int idCorte)
         {
             if (ClaseDAO.CorteDAO.CorteTieneComprasAsociadas(idCorte))
@@ -179,7 +218,11 @@ namespace BibliotecaEntidades.Entidades
             }
             return ClaseDAO.CorteDAO.Delete(idCorte);
         }
-
+        /// <summary>
+        /// Verifica que el nombre de un corte exista en la base de datos
+        /// </summary>
+        /// <param name="nombreCorte">nombre a verificar</param>
+        /// <returns>devuelve true si existe coincidencia</returns>
         public bool ExisteNombreCorte(string nombreCorte)
         {
             return ClaseDAO.CorteDAO.ExisteNombre(nombreCorte);
@@ -209,6 +252,12 @@ namespace BibliotecaEntidades.Entidades
         {
             return ClaseDAO.FacturaDAO.BuscarCoincidencias(cadena, estado);
         }
+        /// <summary>
+        /// Devuelde los cortes de la base de datos segun un filtro
+        /// </summary>
+        /// <param name="filtro"></param>
+        /// <returns></returns>
+        /// <exception cref="ErrorOperacionVendedorExcepcion"></exception>
         public List<Corte> GetProductos(Filtros filtro)
         {
             List<Corte> lista;
