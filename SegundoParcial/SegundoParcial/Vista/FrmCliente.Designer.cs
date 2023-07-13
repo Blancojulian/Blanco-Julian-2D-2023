@@ -297,7 +297,6 @@
             this.Name = "FrmCliente";
             this.ShowIcon = false;
             this.Text = "FrmCliente";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmCliente_FormClosing);
             this.Load += new System.EventHandler(this.FrmCliente_Load);
             ((System.ComponentModel.ISupportInitialize)(this.nudCantidad)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dtgvDatos)).EndInit();

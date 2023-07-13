@@ -313,6 +313,8 @@ namespace BibliotecaEntidades.Entidades
             try
             {
                 this._ct.ThrowIfCancellationRequested();
+
+                FacturaDAO facturaDAO = new FacturaDAO();
                 int numero = 0;
                 while (true)
                 {
@@ -321,7 +323,7 @@ namespace BibliotecaEntidades.Entidades
                         this._ct.ThrowIfCancellationRequested();
                     }
                     //this.OnSolicitarUltimoNumeroFactura?.Invoke();
-                    numero = ClaseDAO.FacturaDAO.GetUltimoNumeroFactura();
+                    numero = facturaDAO.GetUltimoNumeroFactura();
 
                     if (_ultimoNumeroFactura != numero)
                     {

@@ -18,11 +18,12 @@ namespace SegundoParcial.Vista
         public FrmLogin() : base()
         {
             InitializeComponent();
+           
         }
 
         private void FrmLogin_Load(object sender, EventArgs e)
         {
-
+            
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
@@ -106,20 +107,7 @@ namespace SegundoParcial.Vista
         protected override void ConfigurarForm()
         {
             base.ConfigurarForm();
-            //para cuando sea mdiChildren de FrmPrincipal, probar
-            //this.ControlBox = false;
-            //this.FormBorderStyle = FormBorderStyle.None;
-            /*
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.ControlBox = false;
-            this.ShowIcon = false;
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.BackColor = Color.FromArgb(255, 255, 255);
-            this.Dock = DockStyle.Fill;
-
-            this.WindowState = FormWindowState.Maximized;
-            */
+            
 
         }
         protected override void ConfigurarColorForm()

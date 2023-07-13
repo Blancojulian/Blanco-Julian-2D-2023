@@ -22,8 +22,16 @@ namespace SegundoParcial.Vista
 
         private void FrmPrincipal_Load(object sender, EventArgs e)
         {
-            this.frmLogin = new FrmLogin();
-            this.frmLogin.MdiParent = this;
+            this.frmLogin = new FrmLogin()
+            {
+                MdiParent = this,
+                Dock = DockStyle.Fill,
+                FormBorderStyle = FormBorderStyle.None,
+            };
+            //this.frmLogin.MdiParent = this;
+
+            //frmLogin.StartPosition = FormStartPosition.CenterParent;
+            //frmLogin.Location = New Point(((this.ClientSize.Width - frmLogin.Width) + Panel.Width) / 2, (this.ClientSize.Height - frmLogin.Height) / 2);
             this.frmLogin.FormClosed += CerrarLoginYAbrirFormSegunUsuario;
             //frmLogin.Dock = DockStyle.Fill;
             this.frmLogin.Show();

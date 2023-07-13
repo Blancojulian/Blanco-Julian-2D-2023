@@ -34,9 +34,9 @@
             this.lblContrasenia = new System.Windows.Forms.Label();
             this.btnLogin = new System.Windows.Forms.Button();
             this.gpbxUsuarios = new System.Windows.Forms.GroupBox();
-            this.rbtnCliente = new System.Windows.Forms.RadioButton();
-            this.rbtnVendedor = new System.Windows.Forms.RadioButton();
             this.btnCompletarDatos = new System.Windows.Forms.Button();
+            this.rbtnVendedor = new System.Windows.Forms.RadioButton();
+            this.rbtnCliente = new System.Windows.Forms.RadioButton();
             this.gpbxUsuarios.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -98,16 +98,16 @@
             this.gpbxUsuarios.TabStop = false;
             this.gpbxUsuarios.Text = "Usuarios";
             // 
-            // rbtnCliente
+            // btnCompletarDatos
             // 
-            this.rbtnCliente.AutoSize = true;
-            this.rbtnCliente.Location = new System.Drawing.Point(6, 22);
-            this.rbtnCliente.Name = "rbtnCliente";
-            this.rbtnCliente.Size = new System.Drawing.Size(62, 19);
-            this.rbtnCliente.TabIndex = 0;
-            this.rbtnCliente.TabStop = true;
-            this.rbtnCliente.Text = "Cliente";
-            this.rbtnCliente.UseVisualStyleBackColor = true;
+            this.btnCompletarDatos.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.btnCompletarDatos.Location = new System.Drawing.Point(6, 72);
+            this.btnCompletarDatos.Name = "btnCompletarDatos";
+            this.btnCompletarDatos.Size = new System.Drawing.Size(117, 23);
+            this.btnCompletarDatos.TabIndex = 2;
+            this.btnCompletarDatos.Text = "Completar Datos";
+            this.btnCompletarDatos.UseVisualStyleBackColor = true;
+            this.btnCompletarDatos.Click += new System.EventHandler(this.btnCompletarDatos_Click);
             // 
             // rbtnVendedor
             // 
@@ -120,29 +120,33 @@
             this.rbtnVendedor.Text = "Vendedor";
             this.rbtnVendedor.UseVisualStyleBackColor = true;
             // 
-            // btnCompletarDatos
+            // rbtnCliente
             // 
-            this.btnCompletarDatos.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.btnCompletarDatos.Location = new System.Drawing.Point(6, 72);
-            this.btnCompletarDatos.Name = "btnCompletarDatos";
-            this.btnCompletarDatos.Size = new System.Drawing.Size(117, 23);
-            this.btnCompletarDatos.TabIndex = 2;
-            this.btnCompletarDatos.Text = "Completar Datos";
-            this.btnCompletarDatos.UseVisualStyleBackColor = true;
-            this.btnCompletarDatos.Click += new System.EventHandler(this.btnCompletarDatos_Click);
+            this.rbtnCliente.AutoSize = true;
+            this.rbtnCliente.Location = new System.Drawing.Point(6, 22);
+            this.rbtnCliente.Name = "rbtnCliente";
+            this.rbtnCliente.Size = new System.Drawing.Size(62, 19);
+            this.rbtnCliente.TabIndex = 0;
+            this.rbtnCliente.TabStop = true;
+            this.rbtnCliente.Text = "Cliente";
+            this.rbtnCliente.UseVisualStyleBackColor = true;
             // 
             // FrmLogin
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(648, 331);
+            this.ClientSize = new System.Drawing.Size(698, 331);
             this.Controls.Add(this.gpbxUsuarios);
             this.Controls.Add(this.btnLogin);
             this.Controls.Add(this.tbxContrasenia);
             this.Controls.Add(this.lblContrasenia);
             this.Controls.Add(this.tbxMail);
             this.Controls.Add(this.lblMail);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "FrmLogin";
+            this.ShowIcon = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Login";
             this.Load += new System.EventHandler(this.FrmLogin_Load);
             this.gpbxUsuarios.ResumeLayout(false);

@@ -32,7 +32,7 @@ namespace SegundoParcial.Vista
             this._openFileDialog.Filter = "Archivo JSON|*.json|Archivo XML|*.xml";
             this._saveFileDialog = new SaveFileDialog();
             this._saveFileDialog.Filter = "Archivo JSON|*.json|Archivo XML|*.xml";
-            //this._listaCortes = new List<Corte>();
+            this.FormClosing += CerrarAplicacion;
         }
         private string UltimoArchivo
         {
@@ -594,15 +594,15 @@ namespace SegundoParcial.Vista
 
         private void msiCerrarSesion_Click(object sender, EventArgs e)
         {
+            this.PlayClick();
+            this.FormClosing -= this.CerrarAplicacion;
             this.OnAbrirLogin?.Invoke();
             this.Close();
 
         }
-
-        private void FrmHeladera_FormClosing(object sender, FormClosingEventArgs e)
+        private void CerrarAplicacion(object sender, FormClosingEventArgs e)
         {
-            this.OnAbrirLogin?.Invoke();
-            
+            Application.Exit();
         }
     }
 }

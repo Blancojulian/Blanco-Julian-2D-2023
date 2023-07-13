@@ -28,6 +28,7 @@ namespace SegundoParcial.Vista
         {
             this._cliente = cliente;
             this._factura = factura;
+            this.FormClosing += this.CerrarAplicacion;
         }
         private void FrmCliente_Load(object sender, EventArgs e)
         {
@@ -304,13 +305,14 @@ namespace SegundoParcial.Vista
         private void msiCerrarSesion_Click(object sender, EventArgs e)
         {
             this.PlayClick();
+            this.FormClosing -= this.CerrarAplicacion;
             this.OnAbrirLogin?.Invoke();
             this.Close();
         }
 
-        private void FrmCliente_FormClosing(object sender, FormClosingEventArgs e)
+        private void CerrarAplicacion(object sender, FormClosingEventArgs e)
         {
-            this.OnAbrirLogin?.Invoke();
+            Application.Exit();
         }
     }
 }

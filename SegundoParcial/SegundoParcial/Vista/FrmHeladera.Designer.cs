@@ -398,7 +398,6 @@
             this.Name = "FrmHeladera";
             this.ShowIcon = false;
             this.Text = " ";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmHeladera_FormClosing);
             this.Load += new System.EventHandler(this.FrmHeladera_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
